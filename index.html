@@ -501,45 +501,42 @@
 
       <div class="grid grid-2">
         <div>
-          <div class="card card-body" style="margin-bottom:16px">
-            <h3 class="card-title" style="margin-bottom:16px">📤 Enviar Contracheque</h3>
 
-            <!-- Input file oculto -->
+          <!-- CARD UPLOAD -->
+          <div style="background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:16px">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">📤 Enviar Contracheque</h3>
+
             <input type="file" id="file-input" accept=".pdf,image/*"
                    style="display:none" onchange="handleFileUpload(this)">
 
-            <!-- Zona de drag & drop — estilos 100% inline para não depender do CSS externo -->
+            <!-- ZONA DE UPLOAD — visível por padrão, sem display:none -->
             <div id="upload-zone"
                  onclick="document.getElementById('file-input').click()"
-                 style="
-                   border: 2.5px dashed #3B82F6;
-                   border-radius: 14px;
-                   padding: 40px 24px;
-                   text-align: center;
-                   cursor: pointer;
-                   background: #EFF6FF;
-                   transition: all .2s ease;
-                   user-select: none;
-                 ">
-              <div id="upload-icon" style="font-size:56px;margin-bottom:14px;line-height:1;display:block;transition:transform .2s">☁️</div>
-              <div id="upload-txt" style="font-size:16px;font-weight:700;color:#2563EB;margin-bottom:8px">
+                 style="border:2.5px dashed #3B82F6;border-radius:14px;padding:36px 20px;
+                        text-align:center;cursor:pointer;background:#EFF6FF;
+                        transition:border-color .2s,background .2s;min-height:200px;
+                        display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:52px;margin-bottom:12px">☁️</div>
+              <div style="font-size:15px;font-weight:700;color:#2563EB;margin-bottom:6px" id="upload-txt">
                 Arraste o arquivo aqui ou clique para selecionar
               </div>
-              <div style="font-size:13px;color:#64748B;margin-bottom:16px">
-                Aceita PDF ou Imagem (JPG, PNG) — máx 10MB
+              <div style="font-size:13px;color:#64748B;margin-bottom:14px">
+                PDF ou Imagem (JPG, PNG) — máx 10MB
               </div>
               <div style="display:flex;gap:8px;justify-content:center">
-                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#2563EB">PDF</span>
-                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#2563EB">JPG</span>
-                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#2563EB">PNG</span>
+                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:3px 12px;font-size:11px;font-weight:700;color:#2563EB">PDF</span>
+                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:3px 12px;font-size:11px;font-weight:700;color:#2563EB">JPG</span>
+                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:3px 12px;font-size:11px;font-weight:700;color:#2563EB">PNG</span>
               </div>
             </div>
 
-            <!-- Estado processando -->
-            <div id="estado-processando" style="display:none;margin-top:14px;background:#EFF6FF;border-radius:14px;padding:28px;text-align:center">
-              <div style="width:32px;height:32px;border:3px solid #93C5FD;border-top-color:#2563EB;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px"></div>
-              <div style="font-size:15px;font-weight:700;color:#2563EB;margin-bottom:6px">Lendo arquivo...</div>
-              <div style="font-size:12px;color:#64748B">Preencha os dados abaixo com os valores do contracheque</div>
+            <!-- SPINNER DE PROCESSAMENTO — oculto por padrão -->
+            <div id="estado-processando"
+                 style="display:none;background:#EFF6FF;border-radius:14px;padding:28px;text-align:center;margin-top:12px">
+              <div style="width:32px;height:32px;border:3px solid #93C5FD;border-top-color:#2563EB;
+                          border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div>
+              <div style="font-size:15px;font-weight:700;color:#2563EB;margin-bottom:4px">Lendo arquivo...</div>
+              <div style="font-size:12px;color:#64748B">Preencha os valores do contracheque abaixo</div>
             </div>
           </div>
 
@@ -1263,11 +1260,21 @@ async function loadAll() {
 window.go = name => {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  $(`view-${name}`)?.classList.add('active');
+  const view = document.getElementById(`view-${name}`);
+  if (view) view.classList.add('active');
   document.querySelector(`.nav-item[onclick="go('${name}')"]`)?.classList.add('active');
   closeSidebar();
-  // Reinicializa drag & drop ao entrar na tela do extrator
-  if (name === 'extrator') setTimeout(initDragDrop, 100);
+
+  // Ao entrar no extrator: garante upload-zone visível e drag & drop ativo
+  if (name === 'extrator') {
+    const zone = document.getElementById('upload-zone');
+    if (zone) {
+      zone.style.display     = 'flex';
+      zone.style.borderColor = '#3B82F6';
+      zone.style.background  = '#EFF6FF';
+    }
+    setTimeout(initDragDrop, 150);
+  }
 };
 window.toggleSidebar = () => {
   $('sidebar').classList.toggle('open');
@@ -2172,25 +2179,32 @@ function processarArquivo(file) {
 /* ─── RESETAR extrator para novo arquivo ──────────────── */
 window.resetarExtrator = () => {
   document.querySelectorAll('.ext-file-info').forEach(el => el.remove());
+
   const zone = document.getElementById('upload-zone');
   if (zone) {
-    zone.style.display     = 'block';
-    zone.style.borderColor = '#3B82F6';
-    zone.style.background  = '#EFF6FF';
-    zone.style.transform   = '';
-    zone._ddInit = false; // Permite re-registrar drag & drop
+    zone.style.display      = 'flex';
+    zone.style.borderColor  = '#3B82F6';
+    zone.style.background   = '#EFF6FF';
+    zone.style.transform    = '';
+    zone._ddInit = false;
   }
   const proc = document.getElementById('estado-processando');
   if (proc) proc.style.display = 'none';
+
   const form = document.getElementById('ext-form');
   if (form) form.style.display = 'none';
-  const aud  = document.getElementById('ext-auditoria');
-  if (aud)  aud.style.display  = 'none';
+
+  const aud = document.getElementById('ext-auditoria');
+  if (aud) aud.style.display = 'none';
+
   const fi = document.getElementById('file-input');
-  if (fi)  fi.value = '';
+  if (fi) fi.value = '';
+
+  const txt = document.getElementById('upload-txt');
+  if (txt) txt.textContent = 'Arraste o arquivo aqui ou clique para selecionar';
+
   extDadosCalc = null;
   empIdx = 3;
-  // Reinicializa drag & drop após reset
   setTimeout(initDragDrop, 100);
 };
 
