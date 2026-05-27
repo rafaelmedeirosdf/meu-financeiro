@@ -218,13 +218,13 @@ input, select, textarea { font-family: var(--font); }
 /* ══════════════════════════════════════════════════════════
    CONTEÚDO PRINCIPAL
    ══════════════════════════════════════════════════════════ */
-#main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+#main { flex: 1; overflow-y: auto; display: block; }
 
 /* ══════════════════════════════════════════════════════════
    VIEWS (telas)
    ══════════════════════════════════════════════════════════ */
-.view { display: none; flex: 1; padding: 28px; flex-direction: column; }
-.view.active { display: flex; animation: viewIn var(--t) ease; }
+.view { display: none; padding: 28px; overflow-y: auto; }
+.view.active { display: block; animation: viewIn var(--t) ease; }
 
 @keyframes viewIn {
   from { opacity: 0; transform: translateY(8px); }
