@@ -504,14 +504,17 @@
           <div class="card card-body" style="margin-bottom:16px">
             <h3 class="card-title" style="margin-bottom:16px">📤 Enviar Contracheque</h3>
 
-            <!-- Input file oculto — ativado pelo clique na zona -->
+            <!-- Input file oculto -->
             <input type="file" id="file-input" accept=".pdf,image/*"
                    style="display:none" onchange="handleFileUpload(this)">
 
+            <!-- Zona de drag & drop -->
             <div id="upload-zone" class="upload-zone" onclick="$('file-input').click()">
-              <div style="font-size:52px;margin-bottom:12px;line-height:1">☁️</div>
-              <div style="font-size:16px;font-weight:700;color:var(--azul);margin-bottom:6px">Clique para selecionar o arquivo</div>
-              <div style="font-size:13px;color:var(--txt2);margin-bottom:14px">Aceita PDF ou Imagem (JPG, PNG)</div>
+              <div id="upload-icon" style="font-size:52px;margin-bottom:12px;line-height:1;transition:transform .2s">☁️</div>
+              <div style="font-size:16px;font-weight:700;color:var(--azul);margin-bottom:6px" id="upload-txt">
+                Arraste o arquivo aqui ou clique para selecionar
+              </div>
+              <div style="font-size:13px;color:var(--txt2);margin-bottom:14px">Aceita PDF ou Imagem (JPG, PNG) — máx 10MB</div>
               <div class="upload-formats">
                 <span class="upload-format">PDF</span>
                 <span class="upload-format">JPG</span>
@@ -829,7 +832,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
 import {
   getFirestore, collection, doc, addDoc, getDocs,
-  updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot
+  updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot,
+  enableIndexedDbPersistence, enableNetwork, disableNetwork
 } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 
 /* ─── FIREBASE CONFIG ──────────────────────────────────── */
@@ -845,6 +849,80 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 const gp   = new GoogleAuthProvider();
 gp.setCustomParameters({ prompt: 'select_account' });
+
+/* ─── PERSISTÊNCIA OFFLINE (IndexedDB) ─────────────────────
+   Salva todos os dados localmente no dispositivo.
+   Funciona mesmo com tela bloqueada, troca de app ou offline.
+   Quando reconectar, sincroniza automaticamente com o servidor.
+   ─────────────────────────────────────────────────────── */
+enableIndexedDbPersistence(db).catch(err => {
+  if (err.code === 'failed-precondition') {
+    // Múltiplas abas abertas — persiste apenas na primeira
+    console.warn('Persistência: múltiplas abas abertas.');
+  } else if (err.code === 'unimplemented') {
+    // Navegador não suporta IndexedDB (raro)
+    console.warn('Persistência: navegador sem suporte a IndexedDB.');
+  }
+});
+
+/* ─── RECONEXÃO AUTOMÁTICA ─────────────────────────────────
+   Detecta quando a aba/app volta ao foco e força reconexão
+   com o Firestore para garantir dados sempre atualizados.
+   ─────────────────────────────────────────────────────── */
+let _online = true;
+
+// Fica offline quando a aba perde visibilidade
+document.addEventListener('visibilitychange', async () => {
+  if (!uid) return;
+  if (document.hidden) {
+    // Aba em segundo plano — desativa rede para economizar recursos
+    try { await disableNetwork(db); _online = false; } catch(_) {}
+  } else {
+    // Aba voltou ao foco — reconecta e sincroniza
+    try {
+      await enableNetwork(db);
+      _online = true;
+      showStatusBar('🔄 Sincronizando...', 'info');
+      setTimeout(() => hideStatusBar(), 2500);
+    } catch(_) {}
+  }
+});
+
+// Detecta conexão/desconexão de rede
+window.addEventListener('online',  async () => {
+  try { await enableNetwork(db); _online = true; showStatusBar('✅ Online — dados sincronizados', 'success'); setTimeout(hideStatusBar, 2500); } catch(_) {}
+});
+window.addEventListener('offline', async () => {
+  try { await disableNetwork(db); _online = false; showStatusBar('📴 Offline — alterações salvas localmente', 'warn'); } catch(_) {}
+});
+
+/* ─── BARRA DE STATUS DE CONEXÃO ────────────────────────── */
+function showStatusBar(msg, tipo='info') {
+  let bar = document.getElementById('status-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'status-bar';
+    bar.style.cssText = `position:fixed;top:0;left:0;right:0;z-index:9999;
+      padding:8px 16px;font-size:13px;font-weight:600;text-align:center;
+      transition:transform .3s ease;transform:translateY(-100%);`;
+    document.body.appendChild(bar);
+  }
+  const cores = {
+    success: { bg:'#DCFCE7', color:'#16A34A' },
+    warn:    { bg:'#FEF3C7', color:'#D97706' },
+    info:    { bg:'#DBEAFE', color:'#2563EB' },
+    error:   { bg:'#FEE2E2', color:'#DC2626' },
+  };
+  const c = cores[tipo] || cores.info;
+  bar.style.background = c.bg;
+  bar.style.color      = c.color;
+  bar.textContent      = msg;
+  bar.style.transform  = 'translateY(0)';
+}
+function hideStatusBar() {
+  const bar = document.getElementById('status-bar');
+  if (bar) bar.style.transform = 'translateY(-100%)';
+}
 
 /* ─── ESTADO GLOBAL ────────────────────────────────────── */
 let uid = null;
@@ -1034,6 +1112,9 @@ async function loadAll() {
   renderCalendario();
   buildIRTable();
   populateExtContas();
+
+  // Ativa drag & drop na zona de upload
+  setTimeout(initDragDrop, 300);
 }
 
 /* ─── NAVEGAÇÃO ────────────────────────────────────────── */
@@ -1043,6 +1124,8 @@ window.go = name => {
   $(`view-${name}`)?.classList.add('active');
   document.querySelector(`.nav-item[onclick="go('${name}')"]`)?.classList.add('active');
   closeSidebar();
+  // Reinicializa drag & drop ao entrar na tela do extrator
+  if (name === 'extrator') setTimeout(initDragDrop, 100);
 };
 window.toggleSidebar = () => {
   $('sidebar').classList.toggle('open');
@@ -1186,12 +1269,17 @@ window.abrirConta = (d=null) => {
 window.salvarConta = async () => {
   const nome = $('c-nome').value.trim();
   if (!nome) { toast('Informe o nome', 'error'); return; }
-  const id = $('c-id').value;
-  const p = { nome, tipo:$('c-tipo').value, saldo:parseFloat($('c-saldo').value)||0,
-    banco:$('c-banco').value, cor:$('c-cor').value, obs:$('c-obs').value, atualizado:serverTimestamp() };
-  if (id) { await updateDoc(doc(db,'usuarios',uid,'contas',id),p); toast('Conta atualizada!'); }
-  else { p.criado=serverTimestamp(); await addDoc(col('contas'),p); toast('Conta criada!'); }
-  closeModal('modal-conta');
+  const id  = $('c-id').value;
+  const btn = document.querySelector('#modal-conta .btn-primary');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Salvando...'; }
+  try {
+    const p = { nome, tipo:$('c-tipo').value, saldo:parseFloat($('c-saldo').value)||0,
+      banco:$('c-banco').value, cor:$('c-cor').value, obs:$('c-obs').value, atualizado:serverTimestamp() };
+    if (id) { await updateDoc(doc(db,'usuarios',uid,'contas',id),p); toast('Conta atualizada!'); }
+    else    { p.criado=serverTimestamp(); await addDoc(col('contas'),p); toast('Conta criada!'); }
+    closeModal('modal-conta');
+  } catch(e) { toast('Erro ao salvar: '+e.message,'error'); }
+  finally { if (btn) { btn.disabled=false; btn.innerHTML='💾 Salvar'; } }
 };
 
 window.excluirConta = async id => {
@@ -1262,13 +1350,18 @@ window.abrirCartao = (d=null) => {
 window.salvarCartao = async () => {
   const nome = $('cc-nome').value.trim();
   if (!nome) { toast('Informe o nome', 'error'); return; }
-  const id = $('cc-id').value;
-  const p = { nome, bandeira:$('cc-bandeira').value, limite:parseFloat($('cc-limite').value)||0,
-    fechaDia:parseInt($('cc-fecha').value)||1, venceDia:parseInt($('cc-vence').value)||10,
-    cor:$('cc-cor').value, digitos:$('cc-digitos').value, atualizado:serverTimestamp() };
-  if (id) { await updateDoc(doc(db,'usuarios',uid,'cartoes',id),p); toast('Cartão atualizado!'); }
-  else { p.criado=serverTimestamp(); await addDoc(col('cartoes'),p); toast('Cartão criado!'); }
-  closeModal('modal-cartao');
+  const id  = $('cc-id').value;
+  const btn = document.querySelector('#modal-cartao .btn-primary');
+  if (btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Salvando...'; }
+  try {
+    const p = { nome, bandeira:$('cc-bandeira').value, limite:parseFloat($('cc-limite').value)||0,
+      fechaDia:parseInt($('cc-fecha').value)||1, venceDia:parseInt($('cc-vence').value)||10,
+      cor:$('cc-cor').value, digitos:$('cc-digitos').value, atualizado:serverTimestamp() };
+    if (id) { await updateDoc(doc(db,'usuarios',uid,'cartoes',id),p); toast('Cartão atualizado!'); }
+    else    { p.criado=serverTimestamp(); await addDoc(col('cartoes'),p); toast('Cartão criado!'); }
+    closeModal('modal-cartao');
+  } catch(e) { toast('Erro ao salvar: '+e.message,'error'); }
+  finally { if (btn) { btn.disabled=false; btn.innerHTML='💾 Salvar'; } }
 };
 
 window.excluirCartao = async id => {
@@ -1314,11 +1407,16 @@ window.salvarOrcamento = async () => {
   const catId = $('o-categoria').value;
   const cat   = Cats.find(c=>c.id===catId);
   const id    = $('o-id').value;
-  const p = { descricao:desc, meta, catId, catNome:cat?.nome||'', catCor:cat?.cor||'',
-    periodo:$('o-periodo').value, atualizado:serverTimestamp() };
-  if (id) { await updateDoc(doc(db,'usuarios',uid,'orcamentos',id),p); toast('Orçamento atualizado!'); }
-  else { p.criado=serverTimestamp(); await addDoc(col('orcamentos'),p); toast('Orçamento criado!'); }
-  closeModal('modal-orcamento');
+  const btn   = document.querySelector('#modal-orcamento .btn-primary');
+  if (btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Salvando...'; }
+  try {
+    const p = { descricao:desc, meta, catId, catNome:cat?.nome||'', catCor:cat?.cor||'',
+      periodo:$('o-periodo').value, atualizado:serverTimestamp() };
+    if (id) { await updateDoc(doc(db,'usuarios',uid,'orcamentos',id),p); toast('Orçamento atualizado!'); }
+    else    { p.criado=serverTimestamp(); await addDoc(col('orcamentos'),p); toast('Orçamento criado!'); }
+    closeModal('modal-orcamento');
+  } catch(e) { toast('Erro ao salvar: '+e.message,'error'); }
+  finally { if (btn) { btn.disabled=false; btn.innerHTML='💾 Salvar'; } }
 };
 
 window.excluirOrcamento = async id => {
@@ -1383,14 +1481,19 @@ window.abrirEmprestimo = (d=null) => {
 window.salvarEmprestimo = async () => {
   const desc = $('emp-descricao').value.trim();
   if (!desc) { toast('Informe a descrição', 'error'); return; }
-  const id = $('emp-id').value;
-  const p = { descricao:desc, tipo:$('emp-tipo').value, total:parseFloat($('emp-total').value)||0,
-    taxa:parseFloat($('emp-taxa').value)||0, parcelas:parseInt($('emp-parcelas').value)||0,
-    valorParcela:parseFloat($('emp-vparcela').value)||0, diaVenc:parseInt($('emp-dia-venc').value)||10,
-    contaCred:$('emp-conta-cred').value, contaDeb:$('emp-conta-deb').value, atualizado:serverTimestamp() };
-  if (id) { await updateDoc(doc(db,'usuarios',uid,'emprestimos',id),p); toast('Empréstimo atualizado!'); }
-  else { p.criado=serverTimestamp(); await addDoc(col('emprestimos'),p); toast('Empréstimo criado!'); }
-  closeModal('modal-emprestimo');
+  const id  = $('emp-id').value;
+  const btn = document.querySelector('#modal-emprestimo .btn-primary');
+  if (btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Salvando...'; }
+  try {
+    const p = { descricao:desc, tipo:$('emp-tipo').value, total:parseFloat($('emp-total').value)||0,
+      taxa:parseFloat($('emp-taxa').value)||0, parcelas:parseInt($('emp-parcelas').value)||0,
+      valorParcela:parseFloat($('emp-vparcela').value)||0, diaVenc:parseInt($('emp-dia-venc').value)||10,
+      contaCred:$('emp-conta-cred').value, contaDeb:$('emp-conta-deb').value, atualizado:serverTimestamp() };
+    if (id) { await updateDoc(doc(db,'usuarios',uid,'emprestimos',id),p); toast('Empréstimo atualizado!'); }
+    else    { p.criado=serverTimestamp(); await addDoc(col('emprestimos'),p); toast('Empréstimo criado!'); }
+    closeModal('modal-emprestimo');
+  } catch(e) { toast('Erro ao salvar: '+e.message,'error'); }
+  finally { if (btn) { btn.disabled=false; btn.innerHTML='💾 Salvar'; } }
 };
 
 window.excluirEmprestimo = async id => {
@@ -1448,11 +1551,16 @@ window.abrirCategoria = (d=null) => {
 window.salvarCategoria = async () => {
   const nome = $('cat-nome').value.trim();
   if (!nome) { toast('Informe o nome', 'error'); return; }
-  const id = $('cat-id').value;
-  const p  = { nome, tipo:$('cat-tipo').value, cor:$('cat-cor').value, atualizado:serverTimestamp() };
-  if (id) { await updateDoc(doc(db,'usuarios',uid,'categorias',id),p); toast('Categoria atualizada!'); }
-  else { p.criado=serverTimestamp(); await addDoc(col('categorias'),p); toast('Categoria criada!'); }
-  closeModal('modal-categoria');
+  const id  = $('cat-id').value;
+  const btn = document.querySelector('#modal-categoria .btn-primary');
+  if (btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Salvando...'; }
+  try {
+    const p = { nome, tipo:$('cat-tipo').value, cor:$('cat-cor').value, atualizado:serverTimestamp() };
+    if (id) { await updateDoc(doc(db,'usuarios',uid,'categorias',id),p); toast('Categoria atualizada!'); }
+    else    { p.criado=serverTimestamp(); await addDoc(col('categorias'),p); toast('Categoria criada!'); }
+    closeModal('modal-categoria');
+  } catch(e) { toast('Erro ao salvar: '+e.message,'error'); }
+  finally { if (btn) { btn.disabled=false; btn.innerHTML='💾 Salvar'; } }
 };
 
 window.excluirCategoria = async id => {
@@ -1711,10 +1819,54 @@ const TINSS = [
   {ate:7786.02,al:.14, ded:190.40},
 ];
 
+/* ─── DRAG & DROP — configurado via addEventListener ──── */
+function initDragDrop() {
+  const zone = $('upload-zone');
+  if (!zone) return;
+
+  // Impede o browser de abrir o arquivo
+  ['dragenter','dragover','dragleave','drop'].forEach(ev => {
+    zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    document.body.addEventListener(ev, e => e.preventDefault());
+  });
+
+  // Hover visual ao arrastar sobre a zona
+  zone.addEventListener('dragenter', () => {
+    zone.style.borderColor = 'var(--azul)';
+    zone.style.background  = '#EFF6FF';
+    zone.style.transform   = 'scale(1.02)';
+    $('upload-icon').style.transform = 'scale(1.2) translateY(-4px)';
+    $('upload-txt').textContent = '📂 Solte o arquivo aqui!';
+  });
+  zone.addEventListener('dragleave', (e) => {
+    // Só restaura se realmente saiu da zona (não filho)
+    if (!zone.contains(e.relatedTarget)) {
+      zone.style.borderColor = '';
+      zone.style.background  = '';
+      zone.style.transform   = '';
+      $('upload-icon').style.transform = '';
+      $('upload-txt').textContent = 'Arraste o arquivo aqui ou clique para selecionar';
+    }
+  });
+  zone.addEventListener('drop', (e) => {
+    zone.style.borderColor = '';
+    zone.style.background  = '';
+    zone.style.transform   = '';
+    $('upload-icon').style.transform = '';
+    $('upload-txt').textContent = 'Arraste o arquivo aqui ou clique para selecionar';
+    const file = e.dataTransfer.files[0];
+    if (file) processarArquivo(file);
+  });
+}
+
 /* ─── UPLOAD REAL DE ARQUIVO ───────────────────────────── */
 window.handleFileUpload = (input) => {
   const file = input.files[0];
   if (!file) return;
+  processarArquivo(file);
+};
+
+function processarArquivo(file) {
 
   // Valida tipo
   const tiposOk = ['application/pdf','image/jpeg','image/jpg','image/png','image/webp'];
