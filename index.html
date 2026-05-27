@@ -550,11 +550,8 @@
         <!-- Painel de auditoria -->
         <div class="card card-body" id="ext-auditoria" style="display:none">
           <h3 class="card-title" style="margin-bottom:16px">🔍 Auditoria de Cálculos</h3>
-          <div id="audit-items"></div>
-          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--sep)" id="ext-confirmar" style="display:none">
-            <button class="btn btn-success btn-full" onclick="confirmarContracheque()">
-              ✅ Confirmar e Lançar Transações
-            </button>
+          <div id="audit-items">
+            <p style="color:var(--txt2);font-size:13px">Preencha os valores ao lado para ver a auditoria.</p>
           </div>
         </div>
       </div>
@@ -1867,7 +1864,6 @@ window.handleFileUpload = (input) => {
 };
 
 function processarArquivo(file) {
-
   // Valida tipo
   const tiposOk = ['application/pdf','image/jpeg','image/jpg','image/png','image/webp'];
   if (!tiposOk.includes(file.type)) {
@@ -1878,84 +1874,174 @@ function processarArquivo(file) {
     toast('Arquivo muito grande. Máximo 10MB.', 'error'); return;
   }
 
-  $('upload-zone').style.display       = 'none';
+  // Oculta zona de upload e mostra spinner
+  $('upload-zone').style.display        = 'none';
   $('estado-processando').style.display = 'block';
 
-  // Lê o arquivo com FileReader
   const reader = new FileReader();
   reader.onload = () => {
-    // Exibe preview se for imagem
-    if (file.type.startsWith('image/')) {
-      const prev = document.createElement('img');
-      prev.src = reader.result;
-      prev.style.cssText = 'max-width:100%;max-height:160px;border-radius:8px;margin:12px auto;display:block;border:1px solid var(--border)';
-      $('estado-processando').after(prev);
-    }
-
-    // Após leitura, mostra formulário para preenchimento manual
     setTimeout(() => {
       $('estado-processando').style.display = 'none';
-      $('ext-form').style.display           = 'block';
-      $('ext-auditoria').style.display      = 'block';
 
-      // Mostra nome do arquivo no card
-      const info = document.createElement('div');
-      info.style.cssText = 'font-size:12px;color:var(--txt2);margin-bottom:12px;padding:8px;background:var(--bg);border-radius:6px;display:flex;align-items:center;gap:8px';
-      info.innerHTML = `📎 <strong>${file.name}</strong> (${(file.size/1024).toFixed(0)} KB) — preencha os valores abaixo`;
-      $('ext-form').prepend(info);
+      // ── Limpa infos anteriores para evitar duplicatas ao trocar arquivo
+      document.querySelectorAll('.ext-file-info').forEach(el => el.remove());
+      $('ext-bruto').value = '';
+      $('ext-inss').value  = '';
+      $('ext-irrf').value  = '';
+      $('ext-outros').value= '';
+      $('audit-items').innerHTML = '<p style="color:var(--txt2);font-size:13px">Preencha os valores ao lado para ver a auditoria.</p>';
+      extDadosCalc = null;
 
-      toast(`✅ Arquivo "${file.name}" carregado! Preencha os valores do contracheque.`);
-    }, 1000);
+      // ── Badge do arquivo enviado (acima do formulário)
+      const badge = document.createElement('div');
+      badge.className = 'ext-file-info';
+      badge.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--verde-l);border:1px solid var(--verde);border-radius:10px;margin-bottom:14px';
+      badge.innerHTML = `
+        <span style="font-size:20px">${file.type==='application/pdf'?'📄':'🖼️'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:13px;color:var(--verde);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${file.name}</div>
+          <div style="font-size:11px;color:var(--txt2)">${(file.size/1024).toFixed(0)} KB — arquivo carregado com sucesso</div>
+        </div>
+        <button onclick="resetarExtrator()" style="background:none;border:none;cursor:pointer;color:var(--txt3);font-size:18px;padding:2px 6px" title="Trocar arquivo">✕</button>`;
+
+      // ── Preview de imagem
+      if (file.type.startsWith('image/')) {
+        const prev = document.createElement('img');
+        prev.className = 'ext-file-info';
+        prev.src = reader.result;
+        prev.style.cssText = 'max-width:100%;max-height:180px;border-radius:10px;margin-bottom:12px;display:block;border:1px solid var(--border);object-fit:contain';
+        $('ext-form').prepend(prev);
+      }
+
+      $('ext-form').prepend(badge);
+      $('ext-form').style.display      = 'block';
+      $('ext-auditoria').style.display = 'block';
+
+      // Foca no primeiro campo
+      $('ext-bruto').focus();
+      toast(`📎 "${file.name}" carregado — preencha os valores do contracheque`);
+    }, 800);
   };
-  reader.onerror = () => toast('Erro ao ler o arquivo. Tente novamente.', 'error');
+  reader.onerror = () => {
+    $('estado-processando').style.display = 'none';
+    $('upload-zone').style.display        = 'block';
+    toast('Erro ao ler o arquivo. Tente novamente.', 'error');
+  };
   reader.readAsDataURL(file);
+}
+
+/* ─── RESETAR extrator para novo arquivo ──────────────── */
+window.resetarExtrator = () => {
+  document.querySelectorAll('.ext-file-info').forEach(el => el.remove());
+  $('upload-zone').style.display   = 'block';
+  $('ext-form').style.display      = 'none';
+  $('ext-auditoria').style.display = 'none';
+  $('file-input').value = '';
+  extDadosCalc = null;
 };
 
-/* ─── COMPATIBILIDADE: manter simularUpload para não quebrar ── */
+/* ─── COMPATIBILIDADE ──────────────────────────────────── */
 window.simularUpload = () => $('file-input').click();
 
 window.calcContracheque = () => {
-  const bruto  = +$('ext-bruto').value||0;
-  const inss   = +$('ext-inss').value||0;
-  const irrf   = +$('ext-irrf').value||0;
-  const outros = +$('ext-outros').value||0;
+  const bruto  = +$('ext-bruto').value  || 0;
+  const inss   = +$('ext-inss').value   || 0;
+  const irrf   = +$('ext-irrf').value   || 0;
+  const outros = +$('ext-outros').value || 0;
 
-  // INSS calculado
+  // Sem salário: limpa auditoria e oculta botão
+  if (bruto <= 0) {
+    $('audit-items').innerHTML = '<p style="color:var(--txt2);font-size:13px">Preencha o Salário Bruto para ver a auditoria.</p>';
+    extDadosCalc = null;
+    return;
+  }
+
+  // ── Cálculo INSS progressivo (tabela 2024)
   const baseINSS = Math.min(bruto, 7786.02);
   let inssCalc = 0;
-  for (const f of TINSS) if(baseINSS<=f.ate){inssCalc=Math.max(0,baseINSS*f.al-f.ded);break;}
-  inssCalc = Math.round(inssCalc*100)/100;
+  for (const f of TINSS) {
+    if (baseINSS <= f.ate) { inssCalc = Math.max(0, baseINSS * f.al - f.ded); break; }
+  }
+  inssCalc = Math.round(inssCalc * 100) / 100;
 
-  // IRRF calculado sobre bruto-inssCalc
-  const baseIRRF = Math.max(0, bruto-inssCalc);
+  // ── Cálculo IRRF progressivo sobre bruto − inssCalc
+  const baseIRRF = Math.max(0, bruto - inssCalc);
   let irrfCalc = 0;
-  for (const f of TIRPF) if(baseIRRF<=f.ate){irrfCalc=Math.max(0,baseIRRF*f.al-f.ded);break;}
-  irrfCalc = Math.round(irrfCalc*100)/100;
+  for (const f of TIRPF) {
+    if (baseIRRF <= f.ate) { irrfCalc = Math.max(0, baseIRRF * f.al - f.ded); break; }
+  }
+  irrfCalc = Math.round(irrfCalc * 100) / 100;
 
-  const liquido  = bruto - inss - irrf - outros;
-  const inssOk   = Math.abs(inss-inssCalc) <= 0.05;
-  const irrfOk   = Math.abs(irrf-irrfCalc) <= 0.05;
-  extDadosCalc   = {bruto,inss,irrf,outros,liquido,inssCalc,irrfCalc,inssOk,irrfOk};
+  // ── Resultados
+  const liquido   = Math.max(0, bruto - inss - irrf - outros);
+  const inssOk    = inss === 0 || Math.abs(inss - inssCalc) <= 0.05;
+  const irrfOk    = irrf === 0 || Math.abs(irrf - irrfCalc) <= 0.05;
+  const tudo_ok   = inssOk && irrfOk;
+  extDadosCalc    = { bruto, inss, irrf, outros, liquido, inssCalc, irrfCalc, inssOk, irrfOk };
 
-  $('audit-items').innerHTML = [
-    {ok:inssOk, titulo:'INSS', extra:`Retido: ${BRL(inss)} · Calculado: ${BRL(inssCalc)}` + (!inssOk?` · Diferença: ${BRL(Math.abs(inss-inssCalc))}` :'')},
-    {ok:irrfOk, titulo:'IRRF', extra:`Retido: ${BRL(irrf)} · Calculado: ${BRL(irrfCalc)}` + (!irrfOk?` · Diferença: ${BRL(Math.abs(irrf-irrfCalc))}`:'')},
-    {ok:true,   titulo:'Líquido a Receber', extra:BRL(liquido), grande:true},
-  ].map(a=>`
-    <div class="audit-item ${a.ok?'audit-ok':'audit-erro'}">
-      <div class="audit-icon" style="background:${a.ok?'rgba(46,125,50,.15)':'rgba(198,40,40,.15)'}">
-        ${a.ok?'✅':'❌'}
+  // ── Renderiza itens de auditoria
+  const itens = [];
+
+  // INSS
+  itens.push({
+    ok:     inssOk,
+    icone:  inssOk ? '✅' : '❌',
+    titulo: inssOk ? 'INSS Validado' : 'INSS Divergente',
+    linhas: [
+      `Retido no contracheque: <strong>${BRL(inss)}</strong>`,
+      `Calculado pela tabela:  <strong>${BRL(inssCalc)}</strong>`,
+      !inssOk ? `<span style="color:var(--vermelho)">Diferença: ${BRL(Math.abs(inss - inssCalc))}</span>` : '',
+    ]
+  });
+
+  // IRRF
+  itens.push({
+    ok:     irrfOk,
+    icone:  irrfOk ? '✅' : '❌',
+    titulo: irrfOk ? 'IRRF Validado' : 'IRRF Divergente',
+    linhas: [
+      `Retido no contracheque: <strong>${BRL(irrf)}</strong>`,
+      `Calculado pela tabela:  <strong>${BRL(irrfCalc)}</strong>`,
+      `Base de cálculo: <strong>${BRL(baseIRRF)}</strong>`,
+      !irrfOk ? `<span style="color:var(--vermelho)">Diferença: ${BRL(Math.abs(irrf - irrfCalc))}</span>` : '',
+    ]
+  });
+
+  // Líquido
+  itens.push({
+    ok:     true,
+    icone:  '💰',
+    titulo: 'Líquido a Receber',
+    linhas: [`<span style="font-size:20px;font-weight:800;color:var(--azul)">${BRL(liquido)}</span>`],
+    destaque: true
+  });
+
+  $('audit-items').innerHTML = itens.map(a => `
+    <div class="audit-item ${a.ok ? 'audit-ok' : 'audit-erro'}" style="margin-bottom:10px">
+      <div class="audit-icon" style="background:${a.ok ? 'rgba(22,163,74,.12)' : 'rgba(220,38,38,.12)'}">
+        <span style="font-size:18px">${a.icone}</span>
       </div>
-      <div>
-        <div style="font-weight:700;color:${a.ok?'var(--verde)':'var(--vermelho)'}">
-          ${a.ok?'':'Divergência: '}${a.titulo} ${a.ok?'validado':'incorreto'}
-        </div>
-        <div style="font-size:${a.grande?'18px;font-weight:800':'12px'};color:${a.grande?'var(--azul)':'var(--txt2)'};margin-top:3px">${a.extra}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px;color:${a.ok ? 'var(--verde)' : 'var(--vermelho)'};margin-bottom:5px">${a.titulo}</div>
+        ${a.linhas.filter(Boolean).map(l => `<div style="font-size:12px;color:var(--txt2);margin-bottom:2px">${l}</div>`).join('')}
       </div>
     </div>`).join('') +
-    `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--sep)">
-      <button class="btn btn-success btn-full" onclick="confirmarContracheque()">✅ Confirmar e Lançar Transações</button>
-    </div>`;
+
+  // Aviso de divergência
+  (!tudo_ok ? `
+    <div style="padding:10px 14px;background:var(--vermelho-l);border-radius:8px;font-size:12px;color:var(--vermelho);margin-bottom:12px;border-left:3px solid var(--vermelho)">
+      ⚠️ Foram encontradas divergências nos cálculos. Verifique os valores antes de confirmar.
+    </div>` : '') +
+
+  // Botão confirmar — só aparece quando bruto > 0
+  `<div style="margin-top:8px">
+    <button class="btn btn-success btn-full" onclick="confirmarContracheque()" id="btn-confirmar-ext">
+      ✅ Confirmar e Lançar Transações
+    </button>
+    <p style="font-size:11px;color:var(--txt3);text-align:center;margin-top:8px">
+      Serão criadas ${[inss>0,irrf>0,outros>0].filter(Boolean).length + 1} transação(ões) no Firestore
+    </p>
+  </div>`;
 };
 
 window.confirmarContracheque = async () => {
