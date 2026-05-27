@@ -529,20 +529,88 @@
             </div>
           </div>
 
-          <!-- Formulário de dados -->
+          <!-- Formulário de dados completo -->
           <div class="card card-body" id="ext-form" style="display:none">
-            <h3 class="card-title" style="margin-bottom:16px">💼 Dados do Contracheque</h3>
-            <div class="form-row">
-              <div class="form-group"><label>Salário Bruto (R$)</label><input type="number" id="ext-bruto" placeholder="0.00" oninput="calcContracheque()"></div>
-              <div class="form-group"><label>INSS Retido (R$)</label><input type="number" id="ext-inss" placeholder="0.00" oninput="calcContracheque()"></div>
+            <h3 class="card-title" style="margin-bottom:4px">💼 Dados do Contracheque</h3>
+            <p style="font-size:12px;color:var(--txt2);margin-bottom:16px">Preencha apenas os campos que aparecem no seu contracheque</p>
+
+            <!-- PROVENTO PRINCIPAL -->
+            <div style="background:var(--verde-l);border-radius:10px;padding:12px 14px;margin-bottom:14px;border-left:3px solid var(--verde)">
+              <div style="font-size:11px;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">💰 Proventos</div>
+              <div class="form-row">
+                <div class="form-group mb-0"><label>Salário Bruto (R$) *</label><input type="number" id="ext-bruto" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>Horas Extras (R$)</label><input type="number" id="ext-horas-extras" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
+              <div class="form-row" style="margin-top:10px">
+                <div class="form-group mb-0"><label>Adicional Noturno (R$)</label><input type="number" id="ext-adicional-not" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>Outros Proventos (R$)</label><input type="number" id="ext-outros-prov" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
             </div>
-            <div class="form-row">
-              <div class="form-group"><label>IRRF Retido (R$)</label><input type="number" id="ext-irrf" placeholder="0.00" oninput="calcContracheque()"></div>
-              <div class="form-group"><label>Outros Descontos (R$)</label><input type="number" id="ext-outros" placeholder="0.00" oninput="calcContracheque()"></div>
+
+            <!-- DESCONTOS OBRIGATÓRIOS -->
+            <div style="background:var(--vermelho-l);border-radius:10px;padding:12px 14px;margin-bottom:14px;border-left:3px solid var(--vermelho)">
+              <div style="font-size:11px;font-weight:700;color:var(--vermelho);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏛️ Descontos Obrigatórios</div>
+              <div class="form-row">
+                <div class="form-group mb-0"><label>INSS (R$)</label><input type="number" id="ext-inss" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>IRRF (R$)</label><input type="number" id="ext-irrf" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
             </div>
+
+            <!-- BENEFÍCIOS DESCONTADOS -->
+            <div style="background:var(--azul-l);border-radius:10px;padding:12px 14px;margin-bottom:14px;border-left:3px solid var(--azul)">
+              <div style="font-size:11px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🎁 Benefícios Descontados</div>
+              <div class="form-row">
+                <div class="form-group mb-0"><label>Vale Transporte (R$)</label><input type="number" id="ext-vt" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>Vale Refeição / Alimentação (R$)</label><input type="number" id="ext-vr" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
+              <div class="form-row" style="margin-top:10px">
+                <div class="form-group mb-0"><label>Plano de Saúde (R$)</label><input type="number" id="ext-saude" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>Plano Odontológico (R$)</label><input type="number" id="ext-dental" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
+              <div class="form-row" style="margin-top:10px">
+                <div class="form-group mb-0"><label>Seguro de Vida (R$)</label><input type="number" id="ext-seguro" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>Farmácia / Medicamentos (R$)</label><input type="number" id="ext-farmacia" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
+            </div>
+
+            <!-- PREVIDÊNCIA -->
+            <div style="background:var(--roxo-l);border-radius:10px;padding:12px 14px;margin-bottom:14px;border-left:3px solid var(--roxo)">
+              <div style="font-size:11px;font-weight:700;color:var(--roxo);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📈 Previdência</div>
+              <div class="form-row">
+                <div class="form-group mb-0"><label>Prev. Complementar / FUNPRESP (R$)</label><input type="number" id="ext-prev-comp" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>Pensão Alimentícia (R$)</label><input type="number" id="ext-pensao" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
+            </div>
+
+            <!-- EMPRÉSTIMOS / CONSIGNADO -->
+            <div style="background:var(--laranja-l);border-radius:10px;padding:12px 14px;margin-bottom:14px;border-left:3px solid var(--laranja-m)">
+              <div style="font-size:11px;font-weight:700;color:var(--laranja-m);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏛️ Empréstimos / Consignado</div>
+              <div id="ext-emprestimos-campos">
+                <div class="form-row ext-emp-linha">
+                  <div class="form-group mb-0"><label>Empréstimo 1 — Descrição</label><input type="text" class="ext-emp-desc" placeholder="Ex: Consignado BRB"></div>
+                  <div class="form-group mb-0"><label>Valor (R$)</label><input type="number" class="ext-emp-val" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                </div>
+                <div class="form-row ext-emp-linha" style="margin-top:10px">
+                  <div class="form-group mb-0"><label>Empréstimo 2 — Descrição</label><input type="text" class="ext-emp-desc" placeholder="Ex: Financiamento Carro"></div>
+                  <div class="form-group mb-0"><label>Valor (R$)</label><input type="number" class="ext-emp-val" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="margin-top:10px;font-size:11px" onclick="adicionarEmprestimo()">+ Adicionar outro empréstimo</button>
+            </div>
+
+            <!-- OUTROS DESCONTOS -->
+            <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:14px;border-left:3px solid var(--border)">
+              <div style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📋 Outros Descontos</div>
+              <div class="form-row">
+                <div class="form-group mb-0"><label>Sindicato / Associação (R$)</label><input type="number" id="ext-sindicato" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+                <div class="form-group mb-0"><label>Outros (R$)</label><input type="number" id="ext-outros-desc" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>
+              </div>
+            </div>
+
+            <!-- COMPETÊNCIA E CONTA -->
             <div class="form-row">
-              <div class="form-group"><label>Competência</label><input type="month" id="ext-comp"></div>
-              <div class="form-group"><label>Lançar na Conta</label><select id="ext-conta-sel"></select></div>
+              <div class="form-group mb-0"><label>Competência (mês/ano)</label><input type="month" id="ext-comp"></div>
+              <div class="form-group mb-0"><label>Lançar na Conta</label><select id="ext-conta-sel"></select></div>
             </div>
           </div>
         </div>
@@ -1943,119 +2011,229 @@ window.resetarExtrator = () => {
 /* ─── COMPATIBILIDADE ──────────────────────────────────── */
 window.simularUpload = () => $('file-input').click();
 
-window.calcContracheque = () => {
-  const bruto  = +$('ext-bruto').value  || 0;
-  const inss   = +$('ext-inss').value   || 0;
-  const irrf   = +$('ext-irrf').value   || 0;
-  const outros = +$('ext-outros').value || 0;
+/* ── Helper: lê campo numérico ────────────────────────── */
+const extVal = id => parseFloat($(id)?.value) || 0;
 
-  // Sem salário: limpa auditoria e oculta botão
+/* ── Adicionar linha de empréstimo ────────────────────── */
+let empIdx = 3;
+window.adicionarEmprestimo = () => {
+  const cont = $('ext-emprestimos-campos');
+  const div  = document.createElement('div');
+  div.className = 'form-row ext-emp-linha';
+  div.style.marginTop = '10px';
+  div.innerHTML = `
+    <div class="form-group mb-0"><label>Empréstimo ${empIdx} — Descrição</label>
+      <input type="text" class="ext-emp-desc" placeholder="Ex: Consignado Banco X"></div>
+    <div class="form-group mb-0"><label>Valor (R$)</label>
+      <input type="number" class="ext-emp-val" placeholder="0.00" step="0.01" oninput="calcContracheque()"></div>`;
+  cont.appendChild(div);
+  empIdx++;
+};
+
+window.calcContracheque = () => {
+  // ── Proventos
+  const bruto       = extVal('ext-bruto');
+  const horasExtras = extVal('ext-horas-extras');
+  const adicNot     = extVal('ext-adicional-not');
+  const outrosProv  = extVal('ext-outros-prov');
+  const totalBruto  = bruto + horasExtras + adicNot + outrosProv;
+
   if (bruto <= 0) {
     $('audit-items').innerHTML = '<p style="color:var(--txt2);font-size:13px">Preencha o Salário Bruto para ver a auditoria.</p>';
-    extDadosCalc = null;
-    return;
+    extDadosCalc = null; return;
   }
 
-  // ── Cálculo INSS progressivo (tabela 2024)
+  // ── Descontos obrigatórios
+  const inss = extVal('ext-inss');
+  const irrf = extVal('ext-irrf');
+
+  // ── Benefícios
+  const vt       = extVal('ext-vt');
+  const vr       = extVal('ext-vr');
+  const saude    = extVal('ext-saude');
+  const dental   = extVal('ext-dental');
+  const seguro   = extVal('ext-seguro');
+  const farmacia = extVal('ext-farmacia');
+
+  // ── Previdência
+  const prevComp = extVal('ext-prev-comp');
+  const pensao   = extVal('ext-pensao');
+
+  // ── Empréstimos (todos os campos .ext-emp-val)
+  const empLinhas = [];
+  document.querySelectorAll('.ext-emp-linha').forEach((linha, i) => {
+    const desc = linha.querySelector('.ext-emp-desc')?.value.trim() || `Empréstimo ${i+1}`;
+    const val  = parseFloat(linha.querySelector('.ext-emp-val')?.value) || 0;
+    if (val > 0) empLinhas.push({ desc, val });
+  });
+  const totalEmp = empLinhas.reduce((s,e) => s + e.val, 0);
+
+  // ── Outros
+  const sindicato  = extVal('ext-sindicato');
+  const outrosDesc = extVal('ext-outros-desc');
+
+  // ── Total descontos e líquido
+  const totalDescontos = inss + irrf + vt + vr + saude + dental + seguro + farmacia + prevComp + pensao + totalEmp + sindicato + outrosDesc;
+  const liquido        = Math.max(0, totalBruto - totalDescontos);
+
+  // ── Cálculo INSS esperado (tabela 2024)
   const baseINSS = Math.min(bruto, 7786.02);
   let inssCalc = 0;
-  for (const f of TINSS) {
-    if (baseINSS <= f.ate) { inssCalc = Math.max(0, baseINSS * f.al - f.ded); break; }
-  }
+  for (const f of TINSS) { if (baseINSS <= f.ate) { inssCalc = Math.max(0, baseINSS*f.al - f.ded); break; } }
   inssCalc = Math.round(inssCalc * 100) / 100;
 
-  // ── Cálculo IRRF progressivo sobre bruto − inssCalc
+  // ── Cálculo IRRF esperado
   const baseIRRF = Math.max(0, bruto - inssCalc);
   let irrfCalc = 0;
-  for (const f of TIRPF) {
-    if (baseIRRF <= f.ate) { irrfCalc = Math.max(0, baseIRRF * f.al - f.ded); break; }
-  }
+  for (const f of TIRPF) { if (baseIRRF <= f.ate) { irrfCalc = Math.max(0, baseIRRF*f.al - f.ded); break; } }
   irrfCalc = Math.round(irrfCalc * 100) / 100;
 
-  // ── Resultados
-  const liquido   = Math.max(0, bruto - inss - irrf - outros);
-  const inssOk    = inss === 0 || Math.abs(inss - inssCalc) <= 0.05;
-  const irrfOk    = irrf === 0 || Math.abs(irrf - irrfCalc) <= 0.05;
-  const tudo_ok   = inssOk && irrfOk;
-  extDadosCalc    = { bruto, inss, irrf, outros, liquido, inssCalc, irrfCalc, inssOk, irrfOk };
+  const inssOk = inss === 0 || Math.abs(inss - inssCalc) <= 0.05;
+  const irrfOk = irrf === 0 || Math.abs(irrf - irrfCalc) <= 0.05;
 
-  // ── Renderiza itens de auditoria
-  const itens = [];
+  // ── Salva estado para confirmar
+  extDadosCalc = {
+    bruto, horasExtras, adicNot, outrosProv, totalBruto,
+    inss, irrf, inssCalc, irrfCalc, inssOk, irrfOk,
+    vt, vr, saude, dental, seguro, farmacia,
+    prevComp, pensao, empLinhas, totalEmp,
+    sindicato, outrosDesc,
+    totalDescontos, liquido
+  };
 
-  // INSS
-  itens.push({
-    ok:     inssOk,
-    icone:  inssOk ? '✅' : '❌',
-    titulo: inssOk ? 'INSS Validado' : 'INSS Divergente',
-    linhas: [
-      `Retido no contracheque: <strong>${BRL(inss)}</strong>`,
-      `Calculado pela tabela:  <strong>${BRL(inssCalc)}</strong>`,
-      !inssOk ? `<span style="color:var(--vermelho)">Diferença: ${BRL(Math.abs(inss - inssCalc))}</span>` : '',
-    ]
-  });
+  // ── Monta HTML da auditoria
+  const rows = [];
 
-  // IRRF
-  itens.push({
-    ok:     irrfOk,
-    icone:  irrfOk ? '✅' : '❌',
-    titulo: irrfOk ? 'IRRF Validado' : 'IRRF Divergente',
-    linhas: [
-      `Retido no contracheque: <strong>${BRL(irrf)}</strong>`,
-      `Calculado pela tabela:  <strong>${BRL(irrfCalc)}</strong>`,
-      `Base de cálculo: <strong>${BRL(baseIRRF)}</strong>`,
-      !irrfOk ? `<span style="color:var(--vermelho)">Diferença: ${BRL(Math.abs(irrf - irrfCalc))}</span>` : '',
-    ]
-  });
+  // Proventos
+  rows.push({ tipo:'header', titulo:'💰 Proventos', cor:'var(--verde)' });
+  rows.push({ ok:true, titulo:'Salário Bruto', valor:BRL(bruto) });
+  if (horasExtras > 0) rows.push({ ok:true, titulo:'Horas Extras', valor:BRL(horasExtras) });
+  if (adicNot     > 0) rows.push({ ok:true, titulo:'Adicional Noturno', valor:BRL(adicNot) });
+  if (outrosProv  > 0) rows.push({ ok:true, titulo:'Outros Proventos', valor:BRL(outrosProv) });
+  if (totalBruto !== bruto) rows.push({ ok:true, titulo:'Total Bruto', valor:BRL(totalBruto), negrito:true });
 
-  // Líquido
-  itens.push({
-    ok:     true,
-    icone:  '💰',
-    titulo: 'Líquido a Receber',
-    linhas: [`<span style="font-size:20px;font-weight:800;color:var(--azul)">${BRL(liquido)}</span>`],
-    destaque: true
-  });
+  // Descontos obrigatórios
+  rows.push({ tipo:'header', titulo:'🏛️ Descontos Obrigatórios', cor:'var(--vermelho)' });
+  rows.push({ ok:inssOk, titulo:'INSS', valor:BRL(inss), detalhe: inssOk ? `Calculado: ${BRL(inssCalc)} ✓` : `❌ Esperado: ${BRL(inssCalc)} — diferença: ${BRL(Math.abs(inss-inssCalc))}` });
+  rows.push({ ok:irrfOk, titulo:'IRRF', valor:BRL(irrf), detalhe: irrfOk ? `Calculado: ${BRL(irrfCalc)} ✓` : `❌ Esperado: ${BRL(irrfCalc)} — diferença: ${BRL(Math.abs(irrf-irrfCalc))}` });
 
-  $('audit-items').innerHTML = itens.map(a => `
-    <div class="audit-item ${a.ok ? 'audit-ok' : 'audit-erro'}" style="margin-bottom:10px">
-      <div class="audit-icon" style="background:${a.ok ? 'rgba(22,163,74,.12)' : 'rgba(220,38,38,.12)'}">
-        <span style="font-size:18px">${a.icone}</span>
+  // Benefícios
+  if (vt+vr+saude+dental+seguro+farmacia > 0) {
+    rows.push({ tipo:'header', titulo:'🎁 Benefícios', cor:'var(--azul)' });
+    if (vt      > 0) rows.push({ ok:true, titulo:'Vale Transporte',    valor:BRL(vt)      });
+    if (vr      > 0) rows.push({ ok:true, titulo:'Vale Refeição/Alim', valor:BRL(vr)      });
+    if (saude   > 0) rows.push({ ok:true, titulo:'Plano de Saúde',     valor:BRL(saude)   });
+    if (dental  > 0) rows.push({ ok:true, titulo:'Plano Odontológico', valor:BRL(dental)  });
+    if (seguro  > 0) rows.push({ ok:true, titulo:'Seguro de Vida',     valor:BRL(seguro)  });
+    if (farmacia> 0) rows.push({ ok:true, titulo:'Farmácia',           valor:BRL(farmacia)});
+  }
+
+  // Previdência
+  if (prevComp + pensao > 0) {
+    rows.push({ tipo:'header', titulo:'📈 Previdência', cor:'var(--roxo)' });
+    if (prevComp > 0) rows.push({ ok:true, titulo:'Prev. Complementar', valor:BRL(prevComp) });
+    if (pensao   > 0) rows.push({ ok:true, titulo:'Pensão Alimentícia', valor:BRL(pensao)   });
+  }
+
+  // Empréstimos
+  if (empLinhas.length > 0) {
+    rows.push({ tipo:'header', titulo:'🏦 Empréstimos Consignados', cor:'var(--laranja-m)' });
+    empLinhas.forEach(e => rows.push({ ok:true, titulo:e.desc, valor:BRL(e.val) }));
+  }
+
+  // Outros
+  if (sindicato + outrosDesc > 0) {
+    rows.push({ tipo:'header', titulo:'📋 Outros', cor:'var(--txt2)' });
+    if (sindicato  > 0) rows.push({ ok:true, titulo:'Sindicato/Associação', valor:BRL(sindicato)  });
+    if (outrosDesc > 0) rows.push({ ok:true, titulo:'Outros Descontos',      valor:BRL(outrosDesc) });
+  }
+
+  // Total e Líquido
+  rows.push({ tipo:'separator' });
+  rows.push({ ok:true, titulo:'Total Descontos', valor:BRL(totalDescontos), negrito:true, corValor:'var(--vermelho)' });
+  rows.push({ ok:true, titulo:'💰 Líquido a Receber', valor:BRL(liquido), negrito:true, grande:true, corValor:'var(--azul)' });
+
+  // ── Renderiza
+  const html = rows.map(r => {
+    if (r.tipo === 'header') return `<div style="font-size:10px;font-weight:700;color:${r.cor};text-transform:uppercase;letter-spacing:.7px;padding:10px 0 4px;border-top:1px solid var(--sep);margin-top:4px">${r.titulo}</div>`;
+    if (r.tipo === 'separator') return `<div style="border-top:2px solid var(--sep);margin:10px 0"></div>`;
+    return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:4px 0;gap:8px">
+      <div>
+        <span style="font-size:13px;font-weight:${r.negrito?'700':'500'};color:${r.ok?'var(--txt1)':'var(--vermelho)'}">${r.ok?'':'⚠️ '}${r.titulo}</span>
+        ${r.detalhe?`<div style="font-size:11px;color:${r.ok?'var(--txt3)':'var(--vermelho)'};margin-top:1px">${r.detalhe}</div>`:''}
       </div>
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:13px;color:${a.ok ? 'var(--verde)' : 'var(--vermelho)'};margin-bottom:5px">${a.titulo}</div>
-        ${a.linhas.filter(Boolean).map(l => `<div style="font-size:12px;color:var(--txt2);margin-bottom:2px">${l}</div>`).join('')}
-      </div>
-    </div>`).join('') +
+      <span style="font-size:${r.grande?'16px':'13px'};font-weight:${r.negrito||r.grande?'800':'600'};color:${r.corValor||'var(--txt1)'}">− ${r.valor}</span>
+    </div>`;
+  }).join('');
 
-  // Aviso de divergência
-  (!tudo_ok ? `
-    <div style="padding:10px 14px;background:var(--vermelho-l);border-radius:8px;font-size:12px;color:var(--vermelho);margin-bottom:12px;border-left:3px solid var(--vermelho)">
-      ⚠️ Foram encontradas divergências nos cálculos. Verifique os valores antes de confirmar.
-    </div>` : '') +
-
-  // Botão confirmar — só aparece quando bruto > 0
-  `<div style="margin-top:8px">
-    <button class="btn btn-success btn-full" onclick="confirmarContracheque()" id="btn-confirmar-ext">
-      ✅ Confirmar e Lançar Transações
-    </button>
-    <p style="font-size:11px;color:var(--txt3);text-align:center;margin-top:8px">
-      Serão criadas ${[inss>0,irrf>0,outros>0].filter(Boolean).length + 1} transação(ões) no Firestore
-    </p>
-  </div>`;
+  $('audit-items').innerHTML = html +
+    (!inssOk||!irrfOk ? `<div style="padding:9px 12px;background:var(--vermelho-l);border-radius:8px;font-size:12px;color:var(--vermelho);margin-top:8px;border-left:3px solid var(--vermelho)">⚠️ Divergências encontradas — verifique os valores antes de confirmar.</div>` : '') +
+    `<div style="margin-top:14px">
+      <button class="btn btn-success btn-full" id="btn-confirmar-ext" onclick="confirmarContracheque()">✅ Confirmar e Lançar ${1 + [inss,irrf,vt,vr,saude,dental,seguro,farmacia,prevComp,pensao,sindicato,outrosDesc].filter(v=>v>0).length + empLinhas.length} transações</button>
+    </div>`;
 };
 
 window.confirmarContracheque = async () => {
-  if (!extDadosCalc) { toast('Calcule os dados primeiro', 'error'); return; }
-  const {bruto,inss,irrf,outros,liquido} = extDadosCalc;
+  if (!extDadosCalc) { toast('Preencha os dados primeiro', 'error'); return; }
+  const d       = extDadosCalc;
   const contaId = $('ext-conta-sel').value;
   const comp    = $('ext-comp').value || hoje();
+  const btn     = $('btn-confirmar-ext');
+  if (btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Lançando...'; }
+
+  // Mapeia categoria pelo nome — usa catId se existir, senão cria inline
+  const catId = (nome) => Cats.find(c => c.nome.toLowerCase().includes(nome.toLowerCase()))?.id || '';
+  const catCor= (nome) => Cats.find(c => c.nome.toLowerCase().includes(nome.toLowerCase()))?.cor || '#94A3B8';
+
+  // ── Lista de transações a criar
+  const transacoes = [
+    // Receita: salário líquido
+    { tipo:'receita', descricao:`Salário Líquido — ${comp}`, valor:d.liquido,
+      catId:catId('salário'), catNome:'Salário', catCor:'#22C55E' },
+
+    // Proventos extras (receitas separadas se houver)
+    ...(d.horasExtras > 0 ? [{ tipo:'receita', descricao:`Horas Extras — ${comp}`, valor:d.horasExtras, catId:'', catNome:'Salário', catCor:'#22C55E' }] : []),
+    ...(d.adicNot     > 0 ? [{ tipo:'receita', descricao:`Adicional Noturno — ${comp}`, valor:d.adicNot, catId:'', catNome:'Salário', catCor:'#22C55E' }] : []),
+    ...(d.outrosProv  > 0 ? [{ tipo:'receita', descricao:`Outros Proventos — ${comp}`, valor:d.outrosProv, catId:'', catNome:'Salário', catCor:'#22C55E' }] : []),
+
+    // Descontos obrigatórios
+    ...(d.inss > 0 ? [{ tipo:'despesa', descricao:`INSS — ${comp}`, valor:d.inss,
+      catId:'', catNome:'Impostos', catCor:'#6366F1' }] : []),
+    ...(d.irrf > 0 ? [{ tipo:'despesa', descricao:`IRRF — ${comp}`, valor:d.irrf,
+      catId:'', catNome:'Impostos', catCor:'#6366F1' }] : []),
+
+    // Benefícios
+    ...(d.vt       > 0 ? [{ tipo:'despesa', descricao:`Vale Transporte — ${comp}`,     valor:d.vt,       catId:catId('transport'), catNome:'Transporte',  catCor:'#3B82F6' }] : []),
+    ...(d.vr       > 0 ? [{ tipo:'despesa', descricao:`Vale Refeição — ${comp}`,       valor:d.vr,       catId:catId('aliment'),   catNome:'Alimentação', catCor:'#F97316' }] : []),
+    ...(d.saude    > 0 ? [{ tipo:'despesa', descricao:`Plano de Saúde — ${comp}`,      valor:d.saude,    catId:catId('saúde'),     catNome:'Saúde',       catCor:'#EF4444' }] : []),
+    ...(d.dental   > 0 ? [{ tipo:'despesa', descricao:`Plano Odontológico — ${comp}`,  valor:d.dental,   catId:catId('saúde'),     catNome:'Saúde',       catCor:'#EF4444' }] : []),
+    ...(d.seguro   > 0 ? [{ tipo:'despesa', descricao:`Seguro de Vida — ${comp}`,      valor:d.seguro,   catId:'',                 catNome:'Serviços',    catCor:'#6366F1' }] : []),
+    ...(d.farmacia > 0 ? [{ tipo:'despesa', descricao:`Farmácia — ${comp}`,            valor:d.farmacia, catId:catId('saúde'),     catNome:'Saúde',       catCor:'#EF4444' }] : []),
+
+    // Previdência
+    ...(d.prevComp > 0 ? [{ tipo:'despesa', descricao:`Prev. Complementar — ${comp}`,  valor:d.prevComp, catId:'', catNome:'Previdência', catCor:'#7C3AED' }] : []),
+    ...(d.pensao   > 0 ? [{ tipo:'despesa', descricao:`Pensão Alimentícia — ${comp}`,  valor:d.pensao,   catId:'', catNome:'Outros',      catCor:'#94A3B8' }] : []),
+
+    // Empréstimos (cada um separado)
+    ...d.empLinhas.map(e => ({ tipo:'despesa', descricao:`${e.desc} — ${comp}`, valor:e.val,
+      catId:catId('empréstimo'), catNome:'Empréstimos', catCor:'#F97316' })),
+
+    // Outros
+    ...(d.sindicato  > 0 ? [{ tipo:'despesa', descricao:`Sindicato — ${comp}`,       valor:d.sindicato,  catId:'', catNome:'Serviços', catCor:'#94A3B8' }] : []),
+    ...(d.outrosDesc > 0 ? [{ tipo:'despesa', descricao:`Outros Descontos — ${comp}`, valor:d.outrosDesc, catId:'', catNome:'Outros',   catCor:'#94A3B8' }] : []),
+  ];
+
   try {
-    await addDoc(col('transacoes'),{tipo:'receita',descricao:`Salário Líquido — ${comp}`,valor:liquido,data:comp,catId:'',catNome:'Salário',catCor:'#22C55E',contaId,status:'efetivada',criado:serverTimestamp()});
-    if(inss>0) await addDoc(col('transacoes'),{tipo:'despesa',descricao:`INSS — ${comp}`,valor:inss,data:comp,catId:'',catNome:'Impostos',catCor:'#6366F1',contaId,status:'efetivada',criado:serverTimestamp()});
-    if(irrf>0) await addDoc(col('transacoes'),{tipo:'despesa',descricao:`IRRF — ${comp}`,valor:irrf,data:comp,catId:'',catNome:'Impostos',catCor:'#6366F1',contaId,status:'efetivada',criado:serverTimestamp()});
-    if(outros>0) await addDoc(col('transacoes'),{tipo:'despesa',descricao:`Outros Descontos — ${comp}`,valor:outros,data:comp,catId:'',catNome:'Outros',catCor:'#94A3B8',contaId,status:'efetivada',criado:serverTimestamp()});
-    toast(`${irrf>0||inss>0?3:1} transações lançadas com sucesso!`);
-  } catch(e) { toast('Erro: '+e.message,'error'); }
+    await Promise.all(transacoes.map(t =>
+      addDoc(col('transacoes'), { ...t, data:comp, contaId, status:'efetivada', criado:serverTimestamp() })
+    ));
+    toast(`✅ ${transacoes.length} transações lançadas com sucesso!`);
+    resetarExtrator();
+  } catch(e) {
+    toast('Erro ao lançar: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled=false; btn.innerHTML='✅ Confirmar e Lançar Transações'; }
+  }
 };
 
 /* ════════════════════════════════════════════════════════
