@@ -11,44 +11,44 @@
    ══════════════════════════════════════════════════════════ */
 :root {
   /* Cores primárias */
-  --azul:         #1565C0;
-  --azul-l:       #E3F2FD;
-  --azul-d:       #0D47A1;
-  --azul-m:       #1976D2;
+  --azul:         #2563EB;
+  --azul-l:       #DBEAFE;
+  --azul-d:       #1D4ED8;
+  --azul-m:       #3B82F6;
 
   /* Semânticas financeiras */
-  --verde:        #2E7D32;
-  --verde-l:      #E8F5E9;
-  --verde-m:      #43A047;
-  --vermelho:     #C62828;
-  --vermelho-l:   #FFEBEE;
-  --vermelho-m:   #E53935;
-  --laranja:      #E65100;
-  --laranja-l:    #FFF3E0;
-  --laranja-m:    #F57C00;
-  --amarelo:      #F9A825;
-  --amarelo-l:    #FFFDE7;
-  --roxo:         #6A1B9A;
-  --roxo-l:       #F3E5F5;
-  --ciano:        #00838F;
-  --ciano-l:      #E0F7FA;
+  --verde:        #16A34A;
+  --verde-l:      #DCFCE7;
+  --verde-m:      #22C55E;
+  --vermelho:     #DC2626;
+  --vermelho-l:   #FEE2E2;
+  --vermelho-m:   #EF4444;
+  --laranja:      #EA580C;
+  --laranja-l:    #FFEDD5;
+  --laranja-m:    #F97316;
+  --amarelo:      #D97706;
+  --amarelo-l:    #FEF3C7;
+  --roxo:         #7C3AED;
+  --roxo-l:       #EDE9FE;
+  --ciano:        #0891B2;
+  --ciano-l:      #CFFAFE;
 
   /* Superfícies */
-  --bg:           #F0F4F8;
-  --bg-alt:       #E8EDF3;
+  --bg:           #F8FAFC;
+  --bg-alt:       #F1F5F9;
   --card:         #FFFFFF;
   --card-hover:   #FAFBFD;
 
   /* Textos */
-  --txt1:         #1C1C2E;
-  --txt2:         #5A6478;
-  --txt3:         #9BA3B5;
+  --txt1:         #0F172A;
+  --txt2:         #475569;
+  --txt3:         #94A3B8;
   --txt-inv:      #FFFFFF;
 
   /* Bordas */
   --border:       #E2E8F0;
-  --sep:          #ECEEF2;
-  --input-border: #D0D7E3;
+  --sep:          #E2E8F0;
+  --input-border: #CBD5E1;
   --input-focus:  #1565C0;
 
   /* Sidebar */
