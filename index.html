@@ -1254,6 +1254,9 @@ async function loadAll() {
 
   // Ativa drag & drop na zona de upload
   setTimeout(initDragDrop, 300);
+
+  // Restaura a tela que estava aberta antes do Ctrl+F5
+  restaurarTela();
 }
 
 /* ─── NAVEGAÇÃO ────────────────────────────────────────── */
@@ -1264,6 +1267,9 @@ window.go = name => {
   if (view) view.classList.add('active');
   document.querySelector(`.nav-item[onclick="go('${name}')"]`)?.classList.add('active');
   closeSidebar();
+
+  // Salva a tela atual na URL — persiste no Ctrl+F5
+  history.replaceState(null, '', `#${name}`);
 
   // Ao entrar no extrator: garante upload-zone visível e drag & drop ativo
   if (name === 'extrator') {
@@ -1276,6 +1282,20 @@ window.go = name => {
     setTimeout(initDragDrop, 150);
   }
 };
+
+/* ── Restaura a tela salva na URL ao recarregar ────────
+   Chamado após o login e carregamento dos dados.
+   ─────────────────────────────────────────────────── */
+function restaurarTela() {
+  const telas = [
+    'resumo','transacoes','contas','cartoes','orcamentos',
+    'emprestimos','graficos','categorias','calendario',
+    'simuladorir','extrator','configuracoes'
+  ];
+  const hash = window.location.hash.replace('#', '');
+  const tela = telas.includes(hash) ? hash : 'resumo';
+  go(tela);
+}
 window.toggleSidebar = () => {
   $('sidebar').classList.toggle('open');
   $('sidebar-overlay').classList.toggle('open');
