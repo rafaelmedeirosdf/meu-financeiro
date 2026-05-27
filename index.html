@@ -773,7 +773,43 @@
     </div>
     <div class="modal-body">
       <input type="hidden" id="cc-id">
-      <div class="form-group"><label>Nome do Cartão *</label><input type="text" id="cc-nome" placeholder="Ex: Nubank Gold, Inter Black..."></div>
+      <input type="hidden" id="cc-tipo" value="credito">
+
+      <!-- Seletor visual de tipo -->
+      <div class="form-group">
+        <label>Tipo de Cartão</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+
+          <div onclick="selecionarTipoCartao('credito')" id="cc-opt-credito"
+               style="border:2px solid #2563EB;border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;background:#DBEAFE;transition:all .15s">
+            <div style="font-size:26px;margin-bottom:5px">💳</div>
+            <div style="font-size:12px;font-weight:700;color:#2563EB">Crédito</div>
+            <div style="font-size:10px;color:#3B82F6;margin-top:2px">Limite + fatura</div>
+          </div>
+
+          <div onclick="selecionarTipoCartao('prepago')" id="cc-opt-prepago"
+               style="border:2px solid #E2E8F0;border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;background:#F8FAFC;transition:all .15s">
+            <div style="font-size:26px;margin-bottom:5px">🟡</div>
+            <div style="font-size:12px;font-weight:700;color:#64748B">Pré-pago</div>
+            <div style="font-size:10px;color:#94A3B8;margin-top:2px">Saldo carregado</div>
+          </div>
+
+          <div onclick="selecionarTipoCartao('debito')" id="cc-opt-debito"
+               style="border:2px solid #E2E8F0;border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;background:#F8FAFC;transition:all .15s">
+            <div style="font-size:26px;margin-bottom:5px">🏦</div>
+            <div style="font-size:12px;font-weight:700;color:#64748B">Débito</div>
+            <div style="font-size:10px;color:#94A3B8;margin-top:2px">Vinculado à conta</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nome -->
+      <div class="form-group">
+        <label>Nome do Cartão *</label>
+        <input type="text" id="cc-nome" placeholder="Ex: Nubank Gold, VR Benefícios...">
+      </div>
+
+      <!-- Bandeira + valor principal (muda conforme tipo) -->
       <div class="form-row">
         <div class="form-group">
           <label>Bandeira</label>
@@ -785,14 +821,41 @@
             <option value="hipercard">⚫ Hipercard</option>
           </select>
         </div>
-        <div class="form-group"><label>Limite (R$)</label><input type="number" id="cc-limite" placeholder="0.00" step="0.01"></div>
+        <!-- Limite — Crédito -->
+        <div class="form-group" id="cc-grupo-limite">
+          <label>Limite (R$)</label>
+          <input type="number" id="cc-limite" placeholder="0.00" step="0.01">
+        </div>
+        <!-- Saldo — Pré-pago -->
+        <div class="form-group" id="cc-grupo-saldo" style="display:none">
+          <label>Saldo Atual (R$)</label>
+          <input type="number" id="cc-saldo-prepago" placeholder="0.00" step="0.01">
+        </div>
       </div>
-      <div class="form-row-3">
-        <div class="form-group"><label>Fecha Dia</label><input type="number" id="cc-fecha" placeholder="1" min="1" max="31"></div>
-        <div class="form-group"><label>Vence Dia</label><input type="number" id="cc-vence" placeholder="10" min="1" max="31"></div>
-        <div class="form-group"><label>Cor</label><input type="color" id="cc-cor" value="#1565C0"></div>
+
+      <!-- Fecha / Vence — apenas Crédito -->
+      <div id="cc-grupo-datas">
+        <div class="form-row-3">
+          <div class="form-group"><label>Fecha Dia</label><input type="number" id="cc-fecha" placeholder="1" min="1" max="31"></div>
+          <div class="form-group"><label>Vence Dia</label><input type="number" id="cc-vence" placeholder="10" min="1" max="31"></div>
+          <div class="form-group"><label>Cor</label><input type="color" id="cc-cor" value="#1565C0"></div>
+        </div>
       </div>
-      <div class="form-group"><label>Últimos 4 dígitos</label><input type="text" id="cc-digitos" maxlength="4" placeholder="1234"></div>
+
+      <!-- Cor sozinha — Pré-pago e Débito -->
+      <div class="form-group" id="cc-grupo-cor-solo" style="display:none">
+        <label>Cor</label>
+        <input type="color" id="cc-cor-solo" value="#F97316">
+      </div>
+
+      <!-- Últimos 4 dígitos -->
+      <div class="form-group">
+        <label>Últimos 4 dígitos</label>
+        <input type="text" id="cc-digitos" maxlength="4" placeholder="1234">
+      </div>
+
+      <!-- Badge informativo dinâmico -->
+      <div id="cc-tipo-info" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;margin-top:4px"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-cartao')">Cancelar</button>
@@ -1415,27 +1478,100 @@ function populateExtContas() {
 /* ════════════════════════════════════════════════════════
    CARTÕES
    ════════════════════════════════════════════════════════ */
-const BAND_ICO = { mastercard:'🔴',visa:'🔵',elo:'🟡',amex:'🟢',hipercard:'⚫' };
+const BAND_ICO  = { mastercard:'🔴', visa:'🔵', elo:'🟡', amex:'🟢', hipercard:'⚫' };
+const TIPO_CC   = {
+  credito: { label:'Crédito',  icone:'💳', cor:'#2563EB', corCard:'#1565C0' },
+  prepago: { label:'Pré-pago', icone:'🟡', cor:'#D97706', corCard:'#F97316' },
+  debito:  { label:'Débito',   icone:'🏦', cor:'#16A34A', corCard:'#15803D' },
+};
+
+/* ── Seleciona tipo visualmente ─────────────────────── */
+window.selecionarTipoCartao = (tipo) => {
+  $('cc-tipo').value = tipo;
+
+  // Reset visual de todos os botões
+  ['credito','prepago','debito'].forEach(t => {
+    const el = document.getElementById(`cc-opt-${t}`);
+    if (!el) return;
+    el.style.border     = '2px solid #E2E8F0';
+    el.style.background = '#F8FAFC';
+    el.querySelector('div:last-child').style.color = '#64748B';
+  });
+
+  // Ativa o selecionado
+  const ativo = document.getElementById(`cc-opt-${tipo}`);
+  const cfg   = TIPO_CC[tipo];
+  if (ativo && cfg) {
+    ativo.style.border     = `2px solid ${cfg.cor}`;
+    ativo.style.background = tipo==='credito'?'#DBEAFE':tipo==='prepago'?'#FEF3C7':'#DCFCE7';
+    ativo.querySelector('div:last-child').style.color = cfg.cor;
+  }
+
+  // Campos condicionais
+  const ehCredito = tipo === 'credito';
+  const ehPrepago = tipo === 'prepago';
+
+  // Limite (crédito) vs Saldo (pré-pago) vs nenhum (débito)
+  $('cc-grupo-limite').style.display = ehCredito ? '' : 'none';
+  $('cc-grupo-saldo').style.display  = ehPrepago ? '' : 'none';
+
+  // Datas de fatura: só crédito
+  $('cc-grupo-datas').style.display     = ehCredito ? '' : 'none';
+  $('cc-grupo-cor-solo').style.display  = ehCredito ? 'none' : '';
+
+  // Badge informativo
+  const info = $('cc-tipo-info');
+  const msgs = {
+    credito: { bg:'#DBEAFE', cor:'#2563EB', txt:'💳 Cartão pós-pago com limite. Gera fatura mensal com data de fechamento e vencimento.' },
+    prepago: { bg:'#FEF3C7', cor:'#D97706', txt:'🟡 Cartão pré-pago. Você carrega saldo antes de usar — sem fatura, sem juros.' },
+    debito:  { bg:'#DCFCE7', cor:'#16A34A', txt:'🏦 Cartão de débito vinculado à conta corrente. O valor é debitado na hora da compra.' },
+  };
+  const m = msgs[tipo];
+  info.style.display    = 'block';
+  info.style.background = m.bg;
+  info.style.color      = m.cor;
+  info.style.borderLeft = `3px solid ${m.cor}`;
+  info.textContent      = m.txt;
+};
 
 window.abrirCartao = (d=null) => {
-  $('cc-id').value       = d?.id||''; $('cc-nome').value     = d?.nome||'';
-  $('cc-bandeira').value = d?.bandeira||'mastercard'; $('cc-limite').value   = d?.limite||'';
-  $('cc-fecha').value    = d?.fechaDia||''; $('cc-vence').value    = d?.venceDia||'';
-  $('cc-cor').value      = d?.cor||'#1565C0'; $('cc-digitos').value  = d?.digitos||'';
-  $('modal-cartao-titulo').textContent = d?'Editar Cartão':'Novo Cartão';
+  $('cc-id').value       = d?.id     || '';
+  $('cc-nome').value     = d?.nome   || '';
+  $('cc-bandeira').value = d?.bandeira || 'mastercard';
+  $('cc-limite').value   = d?.limite || '';
+  $('cc-saldo-prepago').value = d?.saldoPrepago || '';
+  $('cc-fecha').value    = d?.fechaDia || '';
+  $('cc-vence').value    = d?.venceDia || '';
+  $('cc-cor').value      = d?.cor    || '#1565C0';
+  $('cc-cor-solo').value = d?.cor    || '#F97316';
+  $('cc-digitos').value  = d?.digitos || '';
+  $('modal-cartao-titulo').textContent = d ? 'Editar Cartão' : 'Novo Cartão';
+  // Seleciona tipo ao abrir (padrão: crédito)
+  selecionarTipoCartao(d?.tipoCartao || 'credito');
   openModal('modal-cartao');
 };
 
 window.salvarCartao = async () => {
   const nome = $('cc-nome').value.trim();
-  if (!nome) { toast('Informe o nome', 'error'); return; }
-  const id  = $('cc-id').value;
+  if (!nome) { toast('Informe o nome do cartão', 'error'); return; }
+  const id         = $('cc-id').value;
+  const tipoCartao = $('cc-tipo').value;
+  const ehCredito  = tipoCartao === 'credito';
+  const ehPrepago  = tipoCartao === 'prepago';
+  const cor        = ehCredito ? $('cc-cor').value : $('cc-cor-solo').value;
   const btn = document.querySelector('#modal-cartao .btn-primary');
   if (btn) { btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Salvando...'; }
   try {
-    const p = { nome, bandeira:$('cc-bandeira').value, limite:parseFloat($('cc-limite').value)||0,
-      fechaDia:parseInt($('cc-fecha').value)||1, venceDia:parseInt($('cc-vence').value)||10,
-      cor:$('cc-cor').value, digitos:$('cc-digitos').value, atualizado:serverTimestamp() };
+    const p = {
+      nome, tipoCartao,
+      bandeira:     $('cc-bandeira').value,
+      limite:       ehCredito ? parseFloat($('cc-limite').value)||0 : 0,
+      saldoPrepago: ehPrepago ? parseFloat($('cc-saldo-prepago').value)||0 : 0,
+      fechaDia:     ehCredito ? parseInt($('cc-fecha').value)||1  : null,
+      venceDia:     ehCredito ? parseInt($('cc-vence').value)||10 : null,
+      cor, digitos: $('cc-digitos').value,
+      atualizado:   serverTimestamp()
+    };
     if (id) { await updateDoc(doc(db,'usuarios',uid,'cartoes',id),p); toast('Cartão atualizado!'); }
     else    { p.criado=serverTimestamp(); await addDoc(col('cartoes'),p); toast('Cartão criado!'); }
     closeModal('modal-cartao');
@@ -1450,23 +1586,41 @@ window.excluirCartao = async id => {
 
 function renderCartoes() {
   const g = $('cartoes-grid');
-  if (!CCs.length) { g.innerHTML=`<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">💳</div><h3>Nenhum cartão</h3><p>Adicione um cartão de crédito</p><button class="btn btn-primary" onclick="openModal('modal-cartao')">+ Novo Cartão</button></div></div>`; return; }
-  g.innerHTML = CCs.map(c => `
-    <div class="credit-card" style="background:${c.cor}">
+  if (!CCs.length) {
+    g.innerHTML=`<div style="grid-column:1/-1"><div class="empty-state">
+      <div class="empty-icon">💳</div><h3>Nenhum cartão</h3>
+      <p>Adicione um cartão de crédito, pré-pago ou débito</p>
+      <button class="btn btn-primary" onclick="openModal('modal-cartao')">+ Novo Cartão</button>
+    </div></div>`; return;
+  }
+  g.innerHTML = CCs.map(c => {
+    const tc  = TIPO_CC[c.tipoCartao] || TIPO_CC.credito;
+    // Linha de info varia por tipo
+    const info = c.tipoCartao === 'prepago'
+      ? `Saldo: ${BRL(c.saldoPrepago||0)}`
+      : c.tipoCartao === 'debito'
+      ? `Débito direto na conta`
+      : `Limite ${BRL(c.limite)} · Fecha ${c.fechaDia||'?'} · Vence ${c.venceDia||'?'}`;
+    return `
+    <div class="credit-card" style="background:${c.cor||tc.corCard}">
       <div class="cc-top">
         <span class="cc-chip">${BAND_ICO[c.bandeira]||'💳'}</span>
-        <span class="cc-brand">${(c.bandeira||'').toUpperCase()}</span>
+        <span class="cc-brand" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+          <span>${(c.bandeira||'').toUpperCase()}</span>
+          <span style="font-size:10px;opacity:.8;background:rgba(255,255,255,.2);padding:2px 7px;border-radius:10px">${tc.icone} ${tc.label}</span>
+        </span>
       </div>
       <div class="cc-number">•••• •••• •••• ${c.digitos||'••••'}</div>
       <div class="cc-bottom">
         <div class="cc-name">${c.nome}</div>
-        <div class="cc-details">Limite ${BRL(c.limite)} · Fecha dia ${c.fechaDia||'?'} · Vence dia ${c.venceDia||'?'}</div>
+        <div class="cc-details">${info}</div>
       </div>
       <div class="cc-actions">
         <button class="cc-btn" onclick="abrirCartao(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️ Editar</button>
         <button class="cc-btn" onclick="excluirCartao('${c.id}')">🗑️</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* ════════════════════════════════════════════════════════
