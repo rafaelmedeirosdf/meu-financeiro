@@ -508,24 +508,38 @@
             <input type="file" id="file-input" accept=".pdf,image/*"
                    style="display:none" onchange="handleFileUpload(this)">
 
-            <!-- Zona de drag & drop -->
-            <div id="upload-zone" class="upload-zone" onclick="$('file-input').click()">
-              <div id="upload-icon" style="font-size:52px;margin-bottom:12px;line-height:1;transition:transform .2s">☁️</div>
-              <div style="font-size:16px;font-weight:700;color:var(--azul);margin-bottom:6px" id="upload-txt">
+            <!-- Zona de drag & drop — estilos 100% inline para não depender do CSS externo -->
+            <div id="upload-zone"
+                 onclick="document.getElementById('file-input').click()"
+                 style="
+                   border: 2.5px dashed #3B82F6;
+                   border-radius: 14px;
+                   padding: 40px 24px;
+                   text-align: center;
+                   cursor: pointer;
+                   background: #EFF6FF;
+                   transition: all .2s ease;
+                   user-select: none;
+                 ">
+              <div id="upload-icon" style="font-size:56px;margin-bottom:14px;line-height:1;display:block;transition:transform .2s">☁️</div>
+              <div id="upload-txt" style="font-size:16px;font-weight:700;color:#2563EB;margin-bottom:8px">
                 Arraste o arquivo aqui ou clique para selecionar
               </div>
-              <div style="font-size:13px;color:var(--txt2);margin-bottom:14px">Aceita PDF ou Imagem (JPG, PNG) — máx 10MB</div>
-              <div class="upload-formats">
-                <span class="upload-format">PDF</span>
-                <span class="upload-format">JPG</span>
-                <span class="upload-format">PNG</span>
+              <div style="font-size:13px;color:#64748B;margin-bottom:16px">
+                Aceita PDF ou Imagem (JPG, PNG) — máx 10MB
+              </div>
+              <div style="display:flex;gap:8px;justify-content:center">
+                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#2563EB">PDF</span>
+                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#2563EB">JPG</span>
+                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#2563EB">PNG</span>
               </div>
             </div>
 
-            <div id="estado-processando" class="processing-state" style="display:none;margin-top:14px">
-              <div class="spinner spinner-dark" style="width:32px;height:32px;margin:0 auto"></div>
-              <div class="processing-title">Lendo arquivo...</div>
-              <div class="processing-sub">Preencha os dados abaixo com os valores do contracheque</div>
+            <!-- Estado processando -->
+            <div id="estado-processando" style="display:none;margin-top:14px;background:#EFF6FF;border-radius:14px;padding:28px;text-align:center">
+              <div style="width:32px;height:32px;border:3px solid #93C5FD;border-top-color:#2563EB;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px"></div>
+              <div style="font-size:15px;font-weight:700;color:#2563EB;margin-bottom:6px">Lendo arquivo...</div>
+              <div style="font-size:12px;color:#64748B">Preencha os dados abaixo com os valores do contracheque</div>
             </div>
           </div>
 
@@ -1884,42 +1898,45 @@ const TINSS = [
   {ate:7786.02,al:.14, ded:190.40},
 ];
 
-/* ─── DRAG & DROP — configurado via addEventListener ──── */
+/* ─── DRAG & DROP — via addEventListener ─────────────── */
 function initDragDrop() {
-  const zone = $('upload-zone');
-  if (!zone) return;
+  const zone = document.getElementById('upload-zone');
+  if (!zone || zone._ddInit) return;
+  zone._ddInit = true; // Evita re-registrar listeners
 
-  // Impede o browser de abrir o arquivo
+  const setAtivo = () => {
+    zone.style.borderColor  = '#16A34A';
+    zone.style.background   = '#DCFCE7';
+    zone.style.transform    = 'scale(1.02)';
+    const ico = document.getElementById('upload-icon');
+    const txt = document.getElementById('upload-txt');
+    if (ico) ico.style.transform = 'scale(1.15) translateY(-4px)';
+    if (txt) txt.textContent = '📂 Solte o arquivo aqui!';
+  };
+  const setInativo = () => {
+    zone.style.borderColor  = '#3B82F6';
+    zone.style.background   = '#EFF6FF';
+    zone.style.transform    = '';
+    const ico = document.getElementById('upload-icon');
+    const txt = document.getElementById('upload-txt');
+    if (ico) ico.style.transform = '';
+    if (txt) txt.textContent = 'Arraste o arquivo aqui ou clique para selecionar';
+  };
+
+  // Bloqueia o browser de abrir o arquivo na aba
   ['dragenter','dragover','dragleave','drop'].forEach(ev => {
     zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
-    document.body.addEventListener(ev, e => e.preventDefault());
   });
+  document.addEventListener('dragover',  e => e.preventDefault());
+  document.addEventListener('drop',      e => e.preventDefault());
 
-  // Hover visual ao arrastar sobre a zona
-  zone.addEventListener('dragenter', () => {
-    zone.style.borderColor = 'var(--azul)';
-    zone.style.background  = '#EFF6FF';
-    zone.style.transform   = 'scale(1.02)';
-    $('upload-icon').style.transform = 'scale(1.2) translateY(-4px)';
-    $('upload-txt').textContent = '📂 Solte o arquivo aqui!';
+  zone.addEventListener('dragenter', setAtivo);
+  zone.addEventListener('dragleave', e => {
+    if (!zone.contains(e.relatedTarget)) setInativo();
   });
-  zone.addEventListener('dragleave', (e) => {
-    // Só restaura se realmente saiu da zona (não filho)
-    if (!zone.contains(e.relatedTarget)) {
-      zone.style.borderColor = '';
-      zone.style.background  = '';
-      zone.style.transform   = '';
-      $('upload-icon').style.transform = '';
-      $('upload-txt').textContent = 'Arraste o arquivo aqui ou clique para selecionar';
-    }
-  });
-  zone.addEventListener('drop', (e) => {
-    zone.style.borderColor = '';
-    zone.style.background  = '';
-    zone.style.transform   = '';
-    $('upload-icon').style.transform = '';
-    $('upload-txt').textContent = 'Arraste o arquivo aqui ou clique para selecionar';
-    const file = e.dataTransfer.files[0];
+  zone.addEventListener('drop', e => {
+    setInativo();
+    const file = e.dataTransfer?.files?.[0];
     if (file) processarArquivo(file);
   });
 }
@@ -2001,11 +2018,26 @@ function processarArquivo(file) {
 /* ─── RESETAR extrator para novo arquivo ──────────────── */
 window.resetarExtrator = () => {
   document.querySelectorAll('.ext-file-info').forEach(el => el.remove());
-  $('upload-zone').style.display   = 'block';
-  $('ext-form').style.display      = 'none';
-  $('ext-auditoria').style.display = 'none';
-  $('file-input').value = '';
+  const zone = document.getElementById('upload-zone');
+  if (zone) {
+    zone.style.display     = 'block';
+    zone.style.borderColor = '#3B82F6';
+    zone.style.background  = '#EFF6FF';
+    zone.style.transform   = '';
+    zone._ddInit = false; // Permite re-registrar drag & drop
+  }
+  const proc = document.getElementById('estado-processando');
+  if (proc) proc.style.display = 'none';
+  const form = document.getElementById('ext-form');
+  if (form) form.style.display = 'none';
+  const aud  = document.getElementById('ext-auditoria');
+  if (aud)  aud.style.display  = 'none';
+  const fi = document.getElementById('file-input');
+  if (fi)  fi.value = '';
   extDadosCalc = null;
+  empIdx = 3;
+  // Reinicializa drag & drop após reset
+  setTimeout(initDragDrop, 100);
 };
 
 /* ─── COMPATIBILIDADE ──────────────────────────────────── */
