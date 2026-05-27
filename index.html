@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>minhasfinanças</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & TOKENS ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --azul:       #1565C0;
+  --azul-l:     #E3F2FD;
+  --azul-d:     #0D47A1;
+  --verde:      #2E7D32;
+  --verde-l:    #E8F5E9;
+  --vermelho:   #C62828;
+  --vermelho-l: #FFEBEE;
+  --laranja:    #F57C00;
+  --laranja-l:  #FFF3E0;
+  --amarelo:    #F9A825;
+  --bg:         #F4F6F9;
+  --card:       #FFFFFF;
+  --txt1:       #1C1C2E;
+  --txt2:       #5A6478;
+  --txt3:       #9BA3B5;
+  --border:     #E2E8F0;
+  --sep:        #ECEEF2;
+  --sidebar-bg: #0F172A;
+  --sidebar-t:  #64748B;
+  --sidebar-ta: #FFFFFF;
+  --radius-sm:  8px;
+  --radius:     14px;
+  --radius-lg:  20px;
+  --shadow:     0 2px 8px rgba(0,0,0,.07);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+body { background: var(--bg); color: var(--txt1); min-height: 100vh; overflow-x: hidden; }
+
+/* ─── LAYOUT PRINCIPAL ───────────────────────────────── */
+#app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ─── SIDEBAR ────────────────────────────────────────── */
+#sidebar {
+  width: 240px; background: var(--sidebar-bg); color: var(--sidebar-ta);
+  display: flex; flex-direction: column; flex-shrink: 0;
+  transition: transform .3s ease; z-index: 100;
+}
+.sidebar-logo {
+  padding: 24px 20px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.sidebar-logo .logo-icon {
+  width: 38px; height: 38px; background: var(--azul); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.sidebar-logo h1 {
+  font-size: 16px; font-weight: 800; letter-spacing: -.5px;
+  color: #fff; line-height: 1;
+}
+.sidebar-logo span { font-size: 11px; color: var(--sidebar-t); }
+
+.sidebar-sep { height: 1px; background: rgba(255,255,255,.06); margin: 8px 16px; }
+
+.sidebar-section { padding: 8px 12px 0; }
+.sidebar-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--sidebar-t); padding: 8px 8px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border-radius: 10px; cursor: pointer; transition: all .15s;
+  color: var(--sidebar-t); font-size: 13.5px; font-weight: 500; margin-bottom: 1px;
+}
+.nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,.1); color: #fff; font-weight: 700; }
+.nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  margin-top: auto; padding: 16px 12px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.user-info { display: flex; align-items: center; gap: 10px; }
+.user-avatar {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--azul);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; color: #fff; flex-shrink: 0;
+}
+.user-name { font-size: 13px; font-weight: 600; color: #fff; }
+.user-email { font-size: 11px; color: var(--sidebar-t); }
+
+/* ─── CONTEÚDO PRINCIPAL ─────────────────────────────── */
+#main {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+}
+
+/* ─── TELA (view) ────────────────────────────────────── */
+.view { display: none; flex: 1; padding: 24px; animation: fadeIn .2s ease; }
+.view.active { display: flex; flex-direction: column; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ─── CABEÇALHO DE TELA ──────────────────────────────── */
+.view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.view-title { font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+.view-subtitle { font-size: 13px; color: var(--txt2); margin-top: 2px; }
+
+/* ─── CARDS ──────────────────────────────────────────── */
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-body { padding: 20px; }
+
+.cards-grid { display: grid; gap: 16px; }
+.cards-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.cards-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+/* ─── CARD DE KPI ────────────────────────────────────── */
+.kpi-card {
+  background: var(--card); border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); border-left: 4px solid transparent;
+}
+.kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--txt3); margin-bottom: 6px; }
+.kpi-value { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+.kpi-sub { font-size: 12px; color: var(--txt2); margin-top: 4px; }
+
+/* ─── BOTÕES ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px;
+  border-radius: var(--radius-sm); font-weight: 600; font-size: 13.5px;
+  cursor: pointer; border: none; transition: all .15s; text-decoration: none;
+}
+.btn-primary { background: var(--azul); color: #fff; box-shadow: 0 4px 12px rgba(21,101,192,.3); }
+.btn-primary:hover { background: var(--azul-d); transform: translateY(-1px); }
+.btn-outline { background: transparent; color: var(--azul); border: 1.5px solid var(--azul); }
+.btn-outline:hover { background: var(--azul-l); }
+.btn-danger { background: var(--vermelho); color: #fff; }
+.btn-danger:hover { background: #a31515; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon { padding: 8px; }
+
+/* ─── TABELA ─────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: var(--txt3); padding: 10px 14px;
+  border-bottom: 1px solid var(--sep);
+}
+td { padding: 13px 14px; border-bottom: 1px solid var(--sep); font-size: 13.5px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+
+/* ─── BADGE ──────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+}
+.badge-verde  { background: var(--verde-l);    color: var(--verde);    }
+.badge-vermelho { background: var(--vermelho-l); color: var(--vermelho); }
+.badge-azul   { background: var(--azul-l);     color: var(--azul);     }
+.badge-laranja{ background: var(--laranja-l);  color: var(--laranja);  }
+
+/* ─── FORMULÁRIOS ────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 12px; font-weight: 700; color: var(--txt2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px; }
+input, select, textarea {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; font-family: inherit;
+  background: var(--bg); color: var(--txt1); transition: border .15s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--azul); background: #fff; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ─── MODAL ──────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 480px;
+  box-shadow: var(--shadow-lg); transform: translateY(20px); transition: transform .2s;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.open .modal { transform: none; }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--sep); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 18px; font-weight: 800; }
+.modal-body { padding: 20px 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--sep); display: flex; gap: 10px; justify-content: flex-end; }
+.close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--txt3); line-height: 1; }
+
+/* ─── LOGIN ──────────────────────────────────────────── */
+#login-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+}
+.login-card {
+  background: #fff; border-radius: 24px; padding: 40px;
+  width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo .logo-icon-lg {
+  width: 64px; height: 64px; background: var(--azul); border-radius: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 28px; margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(21,101,192,.4);
+}
+.login-logo h2 { font-size: 26px; font-weight: 800; letter-spacing: -1px; color: var(--txt1); }
+.login-logo p { font-size: 13px; color: var(--txt3); margin-top: 4px; }
+.input-icon-wrap { position: relative; }
+.input-icon-wrap input { padding-left: 42px; }
+.input-icon-wrap .icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--txt3); }
+.divider-or { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+.divider-or::before, .divider-or::after { content:''; flex:1; height:1px; background: var(--sep); }
+.divider-or span { font-size: 12px; color: var(--txt3); font-weight: 600; }
+.btn-google {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 11px; border-radius: 10px; border: 1.5px solid #DADCE0;
+  background: #fff; cursor: pointer; font-size: 14px; font-weight: 600; color: #3C4043;
+  font-family: inherit; transition: all .15s;
+}
+.btn-google:hover { background: #f8f9fa; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+.btn-google .g-icon { font-size: 18px; font-weight: 900; color: #4285F4; }
+.error-msg { background: var(--vermelho-l); color: var(--vermelho); padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 14px; display: none; }
+.error-msg.show { display: block; }
+
+/* ─── RESUMO / DASHBOARD ─────────────────────────────── */
+.progress-bar { height: 6px; background: var(--sep); border-radius: 99px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+
+/* ─── GRÁFICO SIMPLES ────────────────────────────────── */
+.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding: 0 4px; }
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.chart-bar { width: 100%; border-radius: 6px 6px 0 0; transition: height .5s ease; min-height: 4px; }
+.chart-label { font-size: 10px; color: var(--txt3); font-weight: 600; }
+
+/* ─── TOAST ──────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: #1C1C2E; color: #fff; padding: 12px 20px; border-radius: 12px;
+  font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow-lg);
+  transform: translateY(80px); opacity: 0; transition: all .3s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+#toast.show { transform: none; opacity: 1; }
+#toast.success { border-left: 4px solid var(--verde); }
+#toast.error   { border-left: 4px solid var(--vermelho); }
+
+/* ─── FILTRO HORIZONTAL ──────────────────────────────── */
+.filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+.chip {
+  padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+  border: 1.5px solid var(--border); background: var(--card); cursor: pointer;
+  transition: all .15s; color: var(--txt2);
+}
+.chip:hover { border-color: var(--azul); color: var(--azul); }
+.chip.active { background: var(--azul-l); border-color: var(--azul); color: var(--azul); }
+
+/* ─── EMPTY STATE ────────────────────────────────────── */
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 18px; font-weight: 700; color: var(--txt1); margin-bottom: 8px; }
+.empty-state p { font-size: 13px; color: var(--txt2); margin-bottom: 20px; }
+
+/* ─── MOBILE TOGGLE ──────────────────────────────────── */
+#menu-btn {
+  display: none; position: fixed; top: 16px; left: 16px; z-index: 200;
+  background: var(--azul); color: #fff; border: none; border-radius: 10px;
+  padding: 10px 12px; cursor: pointer; font-size: 18px;
+}
+#sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
+
+/* ─── LOADING ────────────────────────────────────────── */
+.spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── CATEGORY DOT ───────────────────────────────────── */
+.cat-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cards-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .cards-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  #menu-btn { display: block; }
+  #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+  #sidebar.open { transform: none; }
+  #sidebar-overlay.open { display: block; }
+  #main { padding-top: 0; }
+  .view { padding: 20px 16px; }
+  .view-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 48px; }
+}
+@media (max-width: 600px) {
+  .cards-grid-4, .cards-grid-3, .cards-grid-2 { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon-lg">💰</div>
+      <h2>minhasfinanças</h2>
+      <p>Gerencie seu patrimônio com inteligência</p>
+    </div>
+    <div id="login-error" class="error-msg"></div>
+    <div class="form-group">
+      <div class="input-icon-wrap">
+        <span class="icon">✉️</span>
+        <input type="email" id="inp-email" placeholder="E-mail" autocomplete="email">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="input-icon-wrap">
+        <span class="icon">🔒</span>
+        <input type="password" id="inp-senha" placeholder="Senha" autocomplete="current-password">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:15px" onclick="handleEmailLogin()" id="btn-login">
+      Entrar
+    </button>
+    <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--txt2)">
+      Não tem conta? <a href="#" onclick="handleCadastro(event)" style="color:var(--azul);font-weight:700">Cadastre-se</a>
+    </p>
+    <div class="divider-or"><span>ou</span></div>
+    <button class="btn-google" onclick="handleGoogleLogin()" id="btn-google">
+      <span class="g-icon">G</span> Continuar com o Google
+    </button>
+    <p style="font-size:11px;color:var(--txt3);text-align:center;margin-top:20px">
+      Ao continuar, você concorda com os <a href="#" style="color:var(--azul)">Termos de Uso</a> e a <a href="#" style="color:var(--azul)">Política de Privacidade</a>.
+    </p>
+  </div>
+</div>
+
+<!-- ══ APP PRINCIPAL ══════════════════════════════════════ -->
+<div id="app" style="display:none">
+  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">💰</div>
+      <div><h1>minhasfinanças</h1><span id="user-greeting">Olá!</span></div>
+    </div>
+    <div class="sidebar-sep"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Principal</div>
+      <div class="nav-item active" onclick="showView('resumo')">
+        <span class="nav-icon">📊</span> Resumo
+      </div>
+      <div class="nav-item" onclick="showView('transacoes')">
+        <span class="nav-icon">↕️</span> Transações
+      </div>
+      <div class="nav-item" onclick="showView('contas')">
+        <span class="nav-icon">🏦</span> Contas
+      </div>
+      <div class="nav-item" onclick="showView('cartoes')">
+        <span class="nav-icon">💳</span> Cartões
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Planejar</div>
+      <div class="nav-item" onclick="showView('orcamentos')">
+        <span class="nav-icon">🎯</span> Orçamentos
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Analisar</div>
+      <div class="nav-item" onclick="showView('graficos')">
+        <span class="nav-icon">📈</span> Gráficos
+      </div>
+      <div class="nav-item" onclick="showView('categorias')">
+        <span class="nav-icon">🏷️</span> Categorias
+      </div>
+      <div class="nav-item" onclick="showView('calendario')">
+        <span class="nav-icon">📅</span> Calendário
+      </div>
+      <div class="nav-item" onclick="showView('simulador')">
+        <span class="nav-icon">🧮</span> Simulador IRPF
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div>
+          <div class="user-name" id="user-name-display">Carregando...</div>
+          <div class="user-email" id="user-email-display"></div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px;width:100%;justify-content:center" onclick="logout()">Sair</button>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO -->
+  <main id="main">
+
+    <!-- ══ RESUMO ══════════════════════════════════════════ -->
+    <div id="view-resumo" class="view active">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Resumo</div>
+          <div class="view-subtitle" id="resumo-mes">Maio 2026</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="mesAnterior()">◀ Anterior</button>
+          <button class="btn btn-outline btn-sm" onclick="mesProximo()">Próximo ▶</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="cards-grid cards-grid-4" style="margin-bottom:20px">
+        <div class="kpi-card" style="border-left-color:var(--verde)">
+          <div class="kpi-label">Receitas</div>
+          <div class="kpi-value" id="kpi-receitas" style="color:var(--verde)">R$ 0,00</div>
+        </div>
+        <div class="kpi-card" style="border-left-color:var(--vermelho)">
+          <div class="kpi-label">Despesas</div>
+          <div class="kpi-value" id="kpi-despesas" style="color:var(--vermelho)">R$ 0,00</div>
+        </div>
+        <div class="kpi-card" style="border-left-color:var(--azul)">
+          <div class="kpi-label">Saldo do Mês</div>
+          <div class="kpi-value" id="kpi-saldo">R$ 0,00</div>
+        </div>
+        <div class="kpi-card" style="border-left-color:var(--amarelo)">
+          <div class="kpi-label">Patrimônio Total</div>
+          <div class="kpi-value" id="kpi-patrimonio" style="color:var(--azul)">R$ 0,00</div>
+        </div>
+      </div>
+
+      <!-- Gráfico e últimas transações -->
+      <div class="cards-grid cards-grid-2" style="margin-bottom:20px">
+        <div class="card card-body">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Evolução Mensal (6m)</h3>
+          <div class="chart-bars" id="chart-evolucao"></div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding-bottom:0">
+            <h3 style="font-size:14px;font-weight:700">Despesas por Categoria</h3>
+          </div>
+          <div id="cat-bars" style="padding:12px 20px"></div>
+        </div>
+      </div>
+
+      <!-- Últimas transações -->
+      <div class="card">
+        <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px">
+          <h3 style="font-size:14px;font-weight:700">Últimas Transações</h3>
+          <button class="btn btn-outline btn-sm" onclick="showView('transacoes')">Ver todas</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Descrição</th><th>Categoria</th><th>Data</th><th>Valor</th></tr></thead>
+            <tbody id="resumo-transacoes-body">
+              <tr><td colspan="4" style="text-align:center;color:var(--txt3);padding:24px">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TRANSAÇÕES ═══════════════════════════════════════ -->
+    <div id="view-transacoes" class="view">
+      <div class="view-header">
+        <div class="view-title">Transações</div>
+        <button class="btn btn-primary" onclick="abrirModalTransacao()">+ Nova Transação</button>
+      </div>
+
+      <div class="filter-row">
+        <span style="font-size:12px;font-weight:700;color:var(--txt2)">Tipo:</span>
+        <div class="chip active" onclick="filtrarTipo(this,'todos')">Todas</div>
+        <div class="chip" onclick="filtrarTipo(this,'receita')">Receitas</div>
+        <div class="chip" onclick="filtrarTipo(this,'despesa')">Despesas</div>
+        <div class="chip" onclick="filtrarTipo(this,'transferencia')">Transferências</div>
+        <input type="month" id="filtro-mes" style="width:auto;padding:6px 10px" onchange="renderTransacoes()">
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Descrição</th><th>Tipo</th><th>Categoria</th><th>Data</th><th>Status</th><th>Valor</th><th></th></tr>
+            </thead>
+            <tbody id="transacoes-body">
+              <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">💸</div><h3>Nenhuma transação</h3><p>Adicione sua primeira transação</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CONTAS ════════════════════════════════════════════ -->
+    <div id="view-contas" class="view">
+      <div class="view-header">
+        <div class="view-title">Contas</div>
+        <button class="btn btn-primary" onclick="abrirModalConta()">+ Nova Conta</button>
+      </div>
+      <div class="cards-grid cards-grid-3" id="contas-grid">
+        <div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏦</div><h3>Nenhuma conta</h3><p>Adicione sua primeira conta bancária</p></div></div>
+      </div>
+    </div>
+
+    <!-- ══ CARTÕES ════════════════════════════════════════════ -->
+    <div id="view-cartoes" class="view">
+      <div class="view-header">
+        <div class="view-title">Cartões de Crédito</div>
+        <button class="btn btn-primary" onclick="abrirModalCartao()">+ Novo Cartão</button>
+      </div>
+      <div class="cards-grid cards-grid-3" id="cartoes-grid">
+        <div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">💳</div><h3>Nenhum cartão</h3><p>Adicione um cartão de crédito</p></div></div>
+      </div>
+    </div>
+
+    <!-- ══ ORÇAMENTOS ════════════════════════════════════════ -->
+    <div id="view-orcamentos" class="view">
+      <div class="view-header">
+        <div class="view-title">Orçamentos</div>
+        <button class="btn btn-primary" onclick="abrirModalOrcamento()">+ Novo Orçamento</button>
+      </div>
+      <div id="orcamentos-list">
+        <div class="empty-state"><div class="empty-icon">🎯</div><h3>Nenhum orçamento</h3><p>Crie orçamentos para controlar seus gastos</p></div>
+      </div>
+    </div>
+
+    <!-- ══ GRÁFICOS ══════════════════════════════════════════ -->
+    <div id="view-graficos" class="view">
+      <div class="view-title" style="margin-bottom:20px">Gráficos</div>
+      <div class="cards-grid cards-grid-2" style="margin-bottom:16px">
+        <div class="card card-body">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Receitas vs Despesas (6 meses)</h3>
+          <div class="chart-bars" id="chart-rec-desp"></div>
+        </div>
+        <div class="card card-body">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Despesas por Categoria</h3>
+          <div id="grafico-cat-desp"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CATEGORIAS ════════════════════════════════════════ -->
+    <div id="view-categorias" class="view">
+      <div class="view-header">
+        <div class="view-title">Categorias</div>
+        <button class="btn btn-primary" onclick="abrirModalCategoria()">+ Nova Categoria</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cor</th><th>Nome</th><th>Tipo</th><th>Ações</th></tr></thead>
+            <tbody id="categorias-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CALENDÁRIO ════════════════════════════════════════ -->
+    <div id="view-calendario" class="view">
+      <div class="view-title" style="margin-bottom:20px">Calendário de Transações</div>
+      <div class="card card-body">
+        <div id="cal-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <button class="btn btn-outline btn-sm" onclick="calMes(-1)">◀</button>
+          <h3 id="cal-titulo" style="font-size:16px;font-weight:700"></h3>
+          <button class="btn btn-outline btn-sm" onclick="calMes(1)">▶</button>
+        </div>
+        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+        <div id="cal-legenda" style="display:flex;gap:12px;margin-top:12px;font-size:12px">
+          <span style="color:var(--verde)">● Receita</span>
+          <span style="color:var(--vermelho)">● Despesa</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SIMULADOR IRPF ════════════════════════════════════ -->
+    <div id="view-simulador" class="view">
+      <div class="view-title" style="margin-bottom:20px">Simulador de IRPF</div>
+      <div class="cards-grid cards-grid-2">
+        <div class="card card-body">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Dados para Simulação</h3>
+          <div class="form-group"><label>Rendimentos Tributáveis (R$)</label><input type="number" id="sim-rendimentos" placeholder="0.00" oninput="calcularIR()"></div>
+          <div class="form-group"><label>Deduções Previdência (R$)</label><input type="number" id="sim-prev" placeholder="0.00" oninput="calcularIR()"></div>
+          <div class="form-group"><label>Deduções Saúde (R$)</label><input type="number" id="sim-saude" placeholder="0.00" oninput="calcularIR()"></div>
+          <div class="form-group"><label>Deduções Educação (R$)</label><input type="number" id="sim-educ" placeholder="0.00" oninput="calcularIR()"></div>
+          <div class="form-group"><label>Dependentes</label><input type="number" id="sim-dep" placeholder="0" min="0" oninput="calcularIR()"></div>
+          <div class="form-group"><label>IRRF já Retido (R$)</label><input type="number" id="sim-irrf" placeholder="0.00" oninput="calcularIR()"></div>
+        </div>
+        <div class="card card-body">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Resultado</h3>
+          <div class="kpi-card" style="border-left-color:var(--verde);margin-bottom:12px">
+            <div class="kpi-label">Base de Cálculo (Deduções Legais)</div>
+            <div class="kpi-value" id="sim-base" style="font-size:18px;color:var(--verde)">R$ 0,00</div>
+          </div>
+          <div class="kpi-card" style="border-left-color:var(--vermelho);margin-bottom:12px">
+            <div class="kpi-label">Imposto Devido</div>
+            <div class="kpi-value" id="sim-imposto" style="font-size:18px;color:var(--vermelho)">R$ 0,00</div>
+          </div>
+          <div class="kpi-card" style="border-left-color:var(--azul)">
+            <div class="kpi-label">Resultado (Pagar/Restituir)</div>
+            <div class="kpi-value" id="sim-resultado" style="font-size:18px">R$ 0,00</div>
+          </div>
+          <p style="font-size:11px;color:var(--txt3);margin-top:16px;font-style:italic">
+            ⚠️ Simulação educativa baseada nas tabelas vigentes. Consulte um contador.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ MODAIS ════════════════════════════════════════════════ -->
+
+<!-- Modal Transação -->
+<div id="modal-transacao" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-transacao-titulo">Nova Transação</h2>
+      <button class="close-btn" onclick="fecharModal('modal-transacao')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="t-id">
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="t-tipo">
+          <option value="despesa">💸 Despesa</option>
+          <option value="receita">💰 Receita</option>
+          <option value="transferencia">↔️ Transferência</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Descrição</label><input type="text" id="t-descricao" placeholder="Ex: Almoço, Salário..."></div>
+      <div class="form-row">
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="t-valor" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="form-group"><label>Data</label><input type="date" id="t-data"></div>
+      </div>
+      <div class="form-group"><label>Categoria</label><select id="t-categoria"></select></div>
+      <div class="form-group"><label>Conta</label><select id="t-conta"></select></div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="t-status">
+          <option value="efetivada">✅ Efetivada</option>
+          <option value="pendente">⏳ Pendente</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal('modal-transacao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarTransacao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Conta -->
+<div id="modal-conta" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">Nova Conta</h2><button class="close-btn" onclick="fecharModal('modal-conta')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="c-id">
+      <div class="form-group"><label>Nome</label><input type="text" id="c-nome" placeholder="Ex: Nubank, Bradesco..."></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="c-tipo">
+            <option value="corrente">🏦 Conta Corrente</option>
+            <option value="poupanca">🐷 Poupança</option>
+            <option value="investimento">📈 Investimento</option>
+            <option value="carteira">👛 Carteira</option>
+            <option value="digital">📱 Conta Digital</option>
+            <option value="beneficio">🎁 Benefício VA/VR</option>
+            <option value="cartao_beneficio">🍽️ Cartão de Benefício</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Saldo Inicial (R$)</label><input type="number" id="c-saldo" placeholder="0.00" step="0.01"></div>
+      </div>
+      <div class="form-group"><label>Cor</label><input type="color" id="c-cor" value="#1565C0" style="height:40px;padding:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal('modal-conta')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarConta()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cartão -->
+<div id="modal-cartao" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">Novo Cartão</h2><button class="close-btn" onclick="fecharModal('modal-cartao')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="cc-id">
+      <div class="form-group"><label>Nome do Cartão</label><input type="text" id="cc-nome" placeholder="Ex: Nubank Gold, Inter Black..."></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bandeira</label>
+          <select id="cc-bandeira">
+            <option value="mastercard">Mastercard</option>
+            <option value="visa">Visa</option>
+            <option value="elo">Elo</option>
+            <option value="amex">Amex</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Limite (R$)</label><input type="number" id="cc-limite" placeholder="0.00" step="0.01"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Fecha Dia</label><input type="number" id="cc-fecha" placeholder="1" min="1" max="31"></div>
+        <div class="form-group"><label>Vence Dia</label><input type="number" id="cc-vence" placeholder="10" min="1" max="31"></div>
+      </div>
+      <div class="form-group"><label>Cor</label><input type="color" id="cc-cor" value="#1565C0" style="height:40px;padding:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal('modal-cartao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCartao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Orçamento -->
+<div id="modal-orcamento" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">Novo Orçamento</h2><button class="close-btn" onclick="fecharModal('modal-orcamento')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="o-id">
+      <div class="form-group"><label>Descrição</label><input type="text" id="o-desc" placeholder="Ex: Alimentação mensal"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Meta (R$)</label><input type="number" id="o-meta" placeholder="0.00" step="0.01"></div>
+        <div class="form-group"><label>Categoria</label><select id="o-cat"></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal('modal-orcamento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarOrcamento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Categoria -->
+<div id="modal-categoria" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h2 class="modal-title">Nova Categoria</h2><button class="close-btn" onclick="fecharModal('modal-categoria')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="cat-id">
+      <div class="form-group"><label>Nome</label><input type="text" id="cat-nome" placeholder="Ex: Alimentação"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="cat-tipo">
+            <option value="despesa">💸 Despesa</option>
+            <option value="receita">💰 Receita</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Cor</label><input type="color" id="cat-cor" value="#1565C0" style="height:40px;padding:4px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal('modal-categoria')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCategoria()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ══ FIREBASE SDK ════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+import {
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+import {
+  getFirestore, collection, doc, addDoc, getDocs, updateDoc, deleteDoc,
+  query, where, orderBy, onSnapshot, getDoc, setDoc, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+// ════════════════════════════════════════════════════════════
+// ⚠️  CONFIGURAÇÃO FIREBASE — substitua pelos seus dados
+//     Firebase Console → Configurações → Adicionar app Web
+// ════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyAcURAWxAGxRZ0pTlHZvri1LM3_KZlHW_c",
+  authDomain:        "meu-financeiro-591eb.firebaseapp.com",
+  projectId:         "meu-financeiro-591eb",
+  storageBucket:     "meu-financeiro-591eb.firebasestorage.app",
+  messagingSenderId: "999119528778",
+  appId:             "1:999119528778:web:8b1c87979f2bbfebb257b3"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const gp   = new GoogleAuthProvider();
+
+// ── Estado global ────────────────────────────────────────
+let uid          = null;
+let currentMes   = new Date();
+let filtroTipo   = 'todos';
+let calData      = new Date();
+
+// ── Cache local (evita re-fetches desnecessários) ────────
+let cacheTransacoes = [];
+let cacheContas     = [];
+let cacheCartoes    = [];
+let cacheCategorias = [];
+let cacheOrcamentos = [];
+
+// ── Helpers ──────────────────────────────────────────────
+const BRL = v => (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const toast = (msg, tipo = 'success') => {
+  const el = document.getElementById('toast');
+  el.textContent = (tipo === 'success' ? '✅ ' : '❌ ') + msg;
+  el.className = `show ${tipo}`;
+  setTimeout(() => el.className = '', 3500);
+};
+const col = name => collection(db, 'usuarios', uid, name);
+const nowISO = () => new Date().toISOString().split('T')[0];
+const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// ════════════════════════════════════════════════════════════
+// AUTENTICAÇÃO
+// ════════════════════════════════════════════════════════════
+window.handleEmailLogin = async () => {
+  const email = document.getElementById('inp-email').value.trim();
+  const senha = document.getElementById('inp-senha').value;
+  const errDiv = document.getElementById('login-error');
+  errDiv.classList.remove('show');
+  if (!email || !senha) { errDiv.textContent = 'Preencha e-mail e senha.'; errDiv.classList.add('show'); return; }
+  const btn = document.getElementById('btn-login');
+  btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    await signInWithEmailAndPassword(auth, email, senha);
+  } catch (e) {
+    const msgs = { 'auth/user-not-found':'Usuário não encontrado.', 'auth/wrong-password':'Senha incorreta.', 'auth/invalid-credential':'E-mail ou senha inválidos.', 'auth/invalid-email':'E-mail inválido.' };
+    errDiv.textContent = msgs[e.code] || 'Erro ao fazer login.';
+    errDiv.classList.add('show');
+    btn.textContent = 'Entrar';
+  }
+};
+
+window.handleCadastro = async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('inp-email').value.trim();
+  const senha = document.getElementById('inp-senha').value;
+  const errDiv = document.getElementById('login-error');
+  errDiv.classList.remove('show');
+  if (!email || !senha) { errDiv.textContent = 'Preencha e-mail e senha.'; errDiv.classList.add('show'); return; }
+  if (senha.length < 6) { errDiv.textContent = 'A senha deve ter pelo menos 6 caracteres.'; errDiv.classList.add('show'); return; }
+  try {
+    await createUserWithEmailAndPassword(auth, email, senha);
+    toast('Conta criada! Bem-vindo!');
+  } catch (e) {
+    const msgs = { 'auth/email-already-in-use':'E-mail já cadastrado.', 'auth/weak-password':'Senha muito fraca.' };
+    errDiv.textContent = msgs[e.code] || 'Erro ao criar conta.';
+    errDiv.classList.add('show');
+  }
+};
+
+window.handleGoogleLogin = async () => {
+  const btn = document.getElementById('btn-google');
+  btn.innerHTML = '<span class="spinner" style="border-color:rgba(0,0,0,.2);border-top-color:#1565C0"></span> Aguarde...';
+  try {
+    await signInWithPopup(auth, gp);
+  } catch (e) {
+    btn.innerHTML = '<span class="g-icon">G</span> Continuar com o Google';
+    if (e.code !== 'auth/popup-closed-by-user') toast('Erro no login com Google', 'error');
+  }
+};
+
+window.logout = async () => { await signOut(auth); };
+
+// ── Observador de autenticação ────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    uid = user.uid;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    // Preenche dados do usuário na sidebar
+    const nm = user.displayName || user.email.split('@')[0];
+    document.getElementById('user-name-display').textContent = nm;
+    document.getElementById('user-email-display').textContent = user.email;
+    document.getElementById('user-avatar').textContent = nm[0].toUpperCase();
+    document.getElementById('user-greeting').textContent = `Olá, ${nm.split(' ')[0]}!`;
+    // Inicializar dados padrão se novo usuário
+    await initUsuario();
+    await loadAll();
+  } else {
+    uid = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+// ────────────────────────────────────────────────────────────
+// INICIALIZAR CATEGORIAS PADRÃO
+// ────────────────────────────────────────────────────────────
+async function initUsuario() {
+  const snap = await getDocs(col('categorias'));
+  if (snap.size > 0) return; // já tem dados
+  const padrao = [
+    { nome:'Alimentação',  tipo:'despesa', cor:'#F97316' },
+    { nome:'Transporte',   tipo:'despesa', cor:'#3B82F6' },
+    { nome:'Moradia',      tipo:'despesa', cor:'#8B5CF6' },
+    { nome:'Saúde',        tipo:'despesa', cor:'#EF4444' },
+    { nome:'Lazer',        tipo:'despesa', cor:'#EC4899' },
+    { nome:'Educação',     tipo:'despesa', cor:'#10B981' },
+    { nome:'Mercado',      tipo:'despesa', cor:'#14B8A6' },
+    { nome:'Outros',       tipo:'despesa', cor:'#94A3B8' },
+    { nome:'Salário',      tipo:'receita', cor:'#22C55E' },
+    { nome:'Freelance',    tipo:'receita', cor:'#34D399' },
+    { nome:'Investimentos',tipo:'receita', cor:'#F59E0B' },
+  ];
+  await Promise.all(padrao.map(c => addDoc(col('categorias'), { ...c, criadoEm: serverTimestamp() })));
+}
+
+// ────────────────────────────────────────────────────────────
+// CARREGAR TODOS OS DADOS
+// ────────────────────────────────────────────────────────────
+async function loadAll() {
+  await Promise.all([loadCategorias(), loadContas(), loadCartoes()]);
+  await Promise.all([loadTransacoes(), loadOrcamentos()]);
+  renderResumo();
+  renderGraficos();
+  renderCalendario();
+  calcularIR();
+}
+
+async function loadCategorias() {
+  const snap = await getDocs(query(col('categorias'), orderBy('nome')));
+  cacheCategorias = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderCategorias();
+  preencherSelectCategorias();
+}
+
+async function loadContas() {
+  const snap = await getDocs(col('contas'));
+  cacheContas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderContas();
+  preencherSelectContas();
+}
+
+async function loadCartoes() {
+  const snap = await getDocs(col('cartoes'));
+  cacheCartoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderCartoes();
+}
+
+async function loadTransacoes() {
+  const snap = await getDocs(query(col('transacoes'), orderBy('data', 'desc')));
+  cacheTransacoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderTransacoes();
+  renderResumo();
+}
+
+async function loadOrcamentos() {
+  const snap = await getDocs(col('orcamentos'));
+  cacheOrcamentos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderOrcamentos();
+}
+
+// ────────────────────────────────────────────────────────────
+// NAVEGAÇÃO
+// ────────────────────────────────────────────────────────────
+window.showView = (nome) => {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`view-${nome}`).classList.add('active');
+  document.querySelector(`.nav-item[onclick="showView('${nome}')"]`)?.classList.add('active');
+  closeSidebar();
+};
+
+window.toggleSidebar = () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+};
+window.closeSidebar = () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+};
+
+// ────────────────────────────────────────────────────────────
+// MESES
+// ────────────────────────────────────────────────────────────
+window.mesAnterior = () => { currentMes.setMonth(currentMes.getMonth() - 1); renderResumo(); };
+window.mesProximo  = () => { currentMes.setMonth(currentMes.getMonth() + 1); renderResumo(); };
+
+// ────────────────────────────────────────────────────────────
+// MODAIS
+// ────────────────────────────────────────────────────────────
+window.abrirModal = (id) => {
+  document.getElementById(id).classList.add('open');
+};
+window.fecharModal = (id) => {
+  document.getElementById(id).classList.remove('open');
+};
+// Fechar ao clicar fora
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ────────────────────────────────────────────────────────────
+// TRANSAÇÕES
+// ────────────────────────────────────────────────────────────
+window.abrirModalTransacao = (dados = null) => {
+  document.getElementById('t-id').value = dados?.id || '';
+  document.getElementById('t-tipo').value = dados?.tipo || 'despesa';
+  document.getElementById('t-descricao').value = dados?.descricao || '';
+  document.getElementById('t-valor').value = dados?.valor || '';
+  document.getElementById('t-data').value = dados?.data || nowISO();
+  document.getElementById('t-status').value = dados?.status || 'efetivada';
+  if (dados?.categoriaId) document.getElementById('t-categoria').value = dados.categoriaId;
+  if (dados?.contaId) document.getElementById('t-conta').value = dados.contaId;
+  document.getElementById('modal-transacao-titulo').textContent = dados ? 'Editar Transação' : 'Nova Transação';
+  abrirModal('modal-transacao');
+};
+
+window.salvarTransacao = async () => {
+  const id          = document.getElementById('t-id').value;
+  const tipo        = document.getElementById('t-tipo').value;
+  const descricao   = document.getElementById('t-descricao').value.trim();
+  const valor       = parseFloat(document.getElementById('t-valor').value);
+  const data        = document.getElementById('t-data').value;
+  const categoriaId = document.getElementById('t-categoria').value;
+  const contaId     = document.getElementById('t-conta').value;
+  const status      = document.getElementById('t-status').value;
+
+  if (!descricao) { toast('Informe a descrição', 'error'); return; }
+  if (!valor || valor <= 0) { toast('Informe um valor válido', 'error'); return; }
+  if (!data) { toast('Informe a data', 'error'); return; }
+
+  const catNome = cacheCategorias.find(c => c.id === categoriaId)?.nome || '';
+  const contaNome = cacheContas.find(c => c.id === contaId)?.nome || '';
+
+  const payload = { tipo, descricao, valor, data, categoriaId, categoriaName: catNome, contaId, contaNome, status, atualizadoEm: serverTimestamp() };
+
+  try {
+    if (id) {
+      await updateDoc(doc(db, 'usuarios', uid, 'transacoes', id), payload);
+      toast('Transação atualizada!');
+    } else {
+      payload.criadoEm = serverTimestamp();
+      await addDoc(col('transacoes'), payload);
+      toast('Transação salva!');
+    }
+    fecharModal('modal-transacao');
+    await loadTransacoes();
+  } catch (e) { toast('Erro ao salvar: ' + e.message, 'error'); }
+};
+
+window.editarTransacao = (id) => {
+  const t = cacheTransacoes.find(t => t.id === id);
+  if (t) abrirModalTransacao(t);
+};
+
+window.excluirTransacao = async (id) => {
+  if (!confirm('Excluir esta transação?')) return;
+  await deleteDoc(doc(db, 'usuarios', uid, 'transacoes', id));
+  toast('Transação excluída!');
+  await loadTransacoes();
+};
+
+window.filtrarTipo = (el, tipo) => {
+  document.querySelectorAll('#view-transacoes .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filtroTipo = tipo;
+  renderTransacoes();
+};
+
+function renderTransacoes() {
+  const body = document.getElementById('transacoes-body');
+  let ts = [...cacheTransacoes];
+
+  // Filtro por tipo
+  if (filtroTipo !== 'todos') ts = ts.filter(t => t.tipo === filtroTipo);
+
+  // Filtro por mês
+  const mesFiltro = document.getElementById('filtro-mes').value;
+  if (mesFiltro) ts = ts.filter(t => t.data && t.data.startsWith(mesFiltro));
+
+  if (ts.length === 0) {
+    body.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">💸</div><h3>Nenhuma transação</h3><p>Clique em "+ Nova Transação"</p></div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = ts.map(t => {
+    const isRec = t.tipo === 'receita';
+    const isDesp = t.tipo === 'despesa';
+    const cor = isRec ? 'verde' : isDesp ? 'vermelho' : 'azul';
+    const sinal = isRec ? '+' : isDesp ? '-' : '↔';
+    return `<tr>
+      <td><strong>${t.descricao}</strong></td>
+      <td><span class="badge badge-${cor}">${t.tipo}</span></td>
+      <td>${t.categoriaName || '—'}</td>
+      <td>${t.data || '—'}</td>
+      <td><span class="badge ${t.status === 'efetivada' ? 'badge-verde' : 'badge-laranja'}">${t.status}</span></td>
+      <td style="font-weight:700;color:var(--${isRec ? 'verde' : isDesp ? 'vermelho' : 'azul'})">${sinal} ${BRL(t.valor)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-outline btn-sm" onclick="editarTransacao('${t.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirTransacao('${t.id}')" style="margin-left:4px">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// CONTAS
+// ────────────────────────────────────────────────────────────
+window.abrirModalConta = (dados = null) => {
+  document.getElementById('c-id').value = dados?.id || '';
+  document.getElementById('c-nome').value = dados?.nome || '';
+  document.getElementById('c-tipo').value = dados?.tipo || 'corrente';
+  document.getElementById('c-saldo').value = dados?.saldo || '';
+  document.getElementById('c-cor').value = dados?.cor || '#1565C0';
+  abrirModal('modal-conta');
+};
+
+window.salvarConta = async () => {
+  const id    = document.getElementById('c-id').value;
+  const nome  = document.getElementById('c-nome').value.trim();
+  const tipo  = document.getElementById('c-tipo').value;
+  const saldo = parseFloat(document.getElementById('c-saldo').value) || 0;
+  const cor   = document.getElementById('c-cor').value;
+  if (!nome) { toast('Informe o nome da conta', 'error'); return; }
+  const payload = { nome, tipo, saldo, cor, atualizadoEm: serverTimestamp() };
+  if (id) {
+    await updateDoc(doc(db, 'usuarios', uid, 'contas', id), payload);
+    toast('Conta atualizada!');
+  } else {
+    payload.criadoEm = serverTimestamp();
+    await addDoc(col('contas'), payload);
+    toast('Conta criada!');
+  }
+  fecharModal('modal-conta');
+  await loadContas();
+  renderResumo();
+};
+
+window.excluirConta = async (id) => {
+  if (!confirm('Excluir esta conta?')) return;
+  await deleteDoc(doc(db, 'usuarios', uid, 'contas', id));
+  toast('Conta excluída!');
+  await loadContas();
+  renderResumo();
+};
+
+function renderContas() {
+  const grid = document.getElementById('contas-grid');
+  if (cacheContas.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">🏦</div><h3>Nenhuma conta</h3><p>Adicione sua primeira conta</p></div></div>`;
+    return;
+  }
+  const tiposIcon = { corrente:'🏦', poupanca:'🐷', investimento:'📈', carteira:'👛', digital:'📱', beneficio:'🎁', cartao_beneficio:'🍽️' };
+  grid.innerHTML = cacheContas.map(c => `
+    <div class="card card-body" style="border-top:4px solid ${c.cor}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:22px;margin-bottom:8px">${tiposIcon[c.tipo] || '🏦'}</div>
+          <div style="font-weight:700;font-size:15px">${c.nome}</div>
+          <div style="font-size:12px;color:var(--txt3)">${c.tipo}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:800;color:${c.saldo >= 0 ? 'var(--verde)' : 'var(--vermelho)'}">${BRL(c.saldo)}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:14px">
+        <button class="btn btn-outline btn-sm" onclick="abrirModalConta(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirConta('${c.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function preencherSelectContas() {
+  const sel = document.getElementById('t-conta');
+  sel.innerHTML = `<option value="">— Selecionar conta —</option>` + cacheContas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// CARTÕES
+// ────────────────────────────────────────────────────────────
+window.abrirModalCartao = (dados = null) => {
+  document.getElementById('cc-id').value = dados?.id || '';
+  document.getElementById('cc-nome').value = dados?.nome || '';
+  document.getElementById('cc-bandeira').value = dados?.bandeira || 'mastercard';
+  document.getElementById('cc-limite').value = dados?.limite || '';
+  document.getElementById('cc-fecha').value = dados?.fechaDia || '';
+  document.getElementById('cc-vence').value = dados?.venceDia || '';
+  document.getElementById('cc-cor').value = dados?.cor || '#1565C0';
+  abrirModal('modal-cartao');
+};
+
+window.salvarCartao = async () => {
+  const id       = document.getElementById('cc-id').value;
+  const nome     = document.getElementById('cc-nome').value.trim();
+  const bandeira = document.getElementById('cc-bandeira').value;
+  const limite   = parseFloat(document.getElementById('cc-limite').value) || 0;
+  const fechaDia = parseInt(document.getElementById('cc-fecha').value) || 1;
+  const venceDia = parseInt(document.getElementById('cc-vence').value) || 10;
+  const cor      = document.getElementById('cc-cor').value;
+  if (!nome) { toast('Informe o nome do cartão', 'error'); return; }
+  const payload = { nome, bandeira, limite, fechaDia, venceDia, cor, atualizadoEm: serverTimestamp() };
+  if (id) { await updateDoc(doc(db,'usuarios',uid,'cartoes',id), payload); toast('Cartão atualizado!'); }
+  else { payload.criadoEm = serverTimestamp(); await addDoc(col('cartoes'), payload); toast('Cartão criado!'); }
+  fecharModal('modal-cartao');
+  await loadCartoes();
+};
+
+window.excluirCartao = async (id) => {
+  if (!confirm('Excluir este cartão?')) return;
+  await deleteDoc(doc(db,'usuarios',uid,'cartoes',id));
+  toast('Cartão excluído!');
+  await loadCartoes();
+};
+
+function renderCartoes() {
+  const grid = document.getElementById('cartoes-grid');
+  if (cacheCartoes.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">💳</div><h3>Nenhum cartão</h3></div></div>`;
+    return;
+  }
+  const bandIcons = { mastercard:'🔴', visa:'🔵', elo:'🟡', amex:'🟢' };
+  grid.innerHTML = cacheCartoes.map(c => `
+    <div class="card card-body" style="background:${c.cor};color:#fff;position:relative;overflow:hidden">
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:22px">${bandIcons[c.bandeira] || '💳'}</span>
+        <span style="font-size:18px;opacity:.6">📶</span>
+      </div>
+      <div style="margin:16px 0 4px;font-size:18px;letter-spacing:3px;font-weight:700">•••• •••• •••• ••••</div>
+      <div style="font-weight:800;font-size:16px">${c.nome}</div>
+      <div style="font-size:12px;opacity:.8;margin-top:4px">${c.bandeira.toUpperCase()} · Limite ${BRL(c.limite)}</div>
+      <div style="font-size:11px;opacity:.7;margin-top:2px">Fecha dia ${c.fechaDia} · Vence dia ${c.venceDia}</div>
+      <div style="display:flex;gap:6px;margin-top:12px">
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="abrirModalCartao(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️ Editar</button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="excluirCartao('${c.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// CATEGORIAS
+// ────────────────────────────────────────────────────────────
+window.abrirModalCategoria = (dados = null) => {
+  document.getElementById('cat-id').value = dados?.id || '';
+  document.getElementById('cat-nome').value = dados?.nome || '';
+  document.getElementById('cat-tipo').value = dados?.tipo || 'despesa';
+  document.getElementById('cat-cor').value = dados?.cor || '#1565C0';
+  abrirModal('modal-categoria');
+};
+
+window.salvarCategoria = async () => {
+  const id   = document.getElementById('cat-id').value;
+  const nome = document.getElementById('cat-nome').value.trim();
+  const tipo = document.getElementById('cat-tipo').value;
+  const cor  = document.getElementById('cat-cor').value;
+  if (!nome) { toast('Informe o nome', 'error'); return; }
+  const payload = { nome, tipo, cor, atualizadoEm: serverTimestamp() };
+  if (id) { await updateDoc(doc(db,'usuarios',uid,'categorias',id), payload); toast('Categoria atualizada!'); }
+  else { payload.criadoEm = serverTimestamp(); await addDoc(col('categorias'), payload); toast('Categoria criada!'); }
+  fecharModal('modal-categoria');
+  await loadCategorias();
+};
+
+window.excluirCategoria = async (id) => {
+  if (!confirm('Excluir esta categoria?')) return;
+  await deleteDoc(doc(db,'usuarios',uid,'categorias',id));
+  toast('Categoria excluída!');
+  await loadCategorias();
+};
+
+function renderCategorias() {
+  const body = document.getElementById('categorias-body');
+  if (cacheCategorias.length === 0) { body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--txt3)">Nenhuma categoria</td></tr>`; return; }
+  body.innerHTML = cacheCategorias.map(c => `
+    <tr>
+      <td><span class="cat-dot" style="background:${c.cor};display:inline-block;width:14px;height:14px;border-radius:50%"></span></td>
+      <td><strong>${c.nome}</strong></td>
+      <td><span class="badge ${c.tipo === 'receita' ? 'badge-verde' : 'badge-vermelho'}">${c.tipo}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="abrirModalCategoria(${JSON.stringify(c).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirCategoria('${c.id}')" style="margin-left:4px">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function preencherSelectCategorias() {
+  const sels = document.querySelectorAll('#t-categoria, #o-cat');
+  sels.forEach(sel => {
+    sel.innerHTML = `<option value="">— Categoria —</option>` + cacheCategorias.map(c => `<option value="${c.id}">${c.tipo === 'receita' ? '💰' : '💸'} ${c.nome}</option>`).join('');
+  });
+}
+
+// ────────────────────────────────────────────────────────────
+// ORÇAMENTOS
+// ────────────────────────────────────────────────────────────
+window.abrirModalOrcamento = (dados = null) => {
+  document.getElementById('o-id').value = dados?.id || '';
+  document.getElementById('o-desc').value = dados?.descricao || '';
+  document.getElementById('o-meta').value = dados?.meta || '';
+  if (dados?.categoriaId) document.getElementById('o-cat').value = dados.categoriaId;
+  abrirModal('modal-orcamento');
+};
+
+window.salvarOrcamento = async () => {
+  const id          = document.getElementById('o-id').value;
+  const descricao   = document.getElementById('o-desc').value.trim();
+  const meta        = parseFloat(document.getElementById('o-meta').value) || 0;
+  const categoriaId = document.getElementById('o-cat').value;
+  const catNome     = cacheCategorias.find(c => c.id === categoriaId)?.nome || '';
+  if (!descricao || meta <= 0) { toast('Preencha todos os campos', 'error'); return; }
+  const payload = { descricao, meta, categoriaId, categoriaName: catNome, atualizadoEm: serverTimestamp() };
+  if (id) { await updateDoc(doc(db,'usuarios',uid,'orcamentos',id), payload); toast('Orçamento atualizado!'); }
+  else { payload.criadoEm = serverTimestamp(); await addDoc(col('orcamentos'), payload); toast('Orçamento criado!'); }
+  fecharModal('modal-orcamento');
+  await loadOrcamentos();
+};
+
+window.excluirOrcamento = async (id) => {
+  if (!confirm('Excluir este orçamento?')) return;
+  await deleteDoc(doc(db,'usuarios',uid,'orcamentos',id));
+  await loadOrcamentos();
+};
+
+function renderOrcamentos() {
+  const list = document.getElementById('orcamentos-list');
+  if (cacheOrcamentos.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🎯</div><h3>Nenhum orçamento</h3><p>Crie orçamentos para controlar seus gastos</p></div>`;
+    return;
+  }
+  // Calcula gasto atual de cada orçamento pelo mês corrente
+  const mesStr = `${currentMes.getFullYear()}-${String(currentMes.getMonth()+1).padStart(2,'0')}`;
+  list.innerHTML = cacheOrcamentos.map(o => {
+    const gasto = cacheTransacoes
+      .filter(t => t.tipo === 'despesa' && t.categoriaId === o.categoriaId && t.data?.startsWith(mesStr))
+      .reduce((s, t) => s + (t.valor || 0), 0);
+    const pct = Math.min(100, Math.round((gasto / o.meta) * 100));
+    const cor = pct >= 100 ? 'var(--vermelho)' : pct >= 80 ? 'var(--laranja)' : 'var(--verde)';
+    return `
+    <div class="card card-body" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div><div style="font-weight:700">${o.descricao}</div><div style="font-size:12px;color:var(--txt3)">${o.categoriaName || '—'}</div></div>
+        <div style="text-align:right">
+          <div style="font-weight:800;color:${cor}">${BRL(gasto)}</div>
+          <div style="font-size:12px;color:var(--txt3)">de ${BRL(o.meta)}</div>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${cor}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--txt3)"><span>${pct}% utilizado</span><span>${BRL(o.meta - gasto)} restante</span></div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="abrirModalOrcamento(${JSON.stringify(o).replace(/"/g,'&quot;')})">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirOrcamento('${o.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ────────────────────────────────────────────────────────────
+// RESUMO (DASHBOARD)
+// ────────────────────────────────────────────────────────────
+function renderResumo() {
+  const mesStr = `${currentMes.getFullYear()}-${String(currentMes.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('resumo-mes').textContent = `${MESES_PT[currentMes.getMonth()]} ${currentMes.getFullYear()}`;
+
+  const tsMes = cacheTransacoes.filter(t => t.data?.startsWith(mesStr));
+  const receitas  = tsMes.filter(t => t.tipo === 'receita').reduce((s,t) => s + (t.valor||0), 0);
+  const despesas  = tsMes.filter(t => t.tipo === 'despesa').reduce((s,t) => s + (t.valor||0), 0);
+  const saldo     = receitas - despesas;
+  const patrimonio = cacheContas.reduce((s,c) => s + (c.saldo||0), 0);
+
+  document.getElementById('kpi-receitas').textContent  = BRL(receitas);
+  document.getElementById('kpi-despesas').textContent  = BRL(despesas);
+  document.getElementById('kpi-saldo').textContent     = BRL(saldo);
+  document.getElementById('kpi-saldo').style.color     = saldo >= 0 ? 'var(--verde)' : 'var(--vermelho)';
+  document.getElementById('kpi-patrimonio').textContent = BRL(patrimonio);
+
+  // Últimas 5 transações
+  const tbody = document.getElementById('resumo-transacoes-body');
+  const ults = cacheTransacoes.slice(0, 5);
+  if (ults.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--txt3);padding:24px">Nenhuma transação ainda</td></tr>`; }
+  else tbody.innerHTML = ults.map(t => {
+    const cor = t.tipo === 'receita' ? 'verde' : t.tipo === 'despesa' ? 'vermelho' : 'azul';
+    return `<tr><td>${t.descricao}</td><td>${t.categoriaName || '—'}</td><td>${t.data || '—'}</td><td style="font-weight:700;color:var(--${cor})">${t.tipo === 'receita' ? '+' : '-'} ${BRL(t.valor)}</td></tr>`;
+  }).join('');
+
+  // Barras de categorias
+  const catGastos = {};
+  tsMes.filter(t => t.tipo === 'despesa').forEach(t => {
+    catGastos[t.categoriaName || 'Outros'] = (catGastos[t.categoriaName || 'Outros'] || 0) + (t.valor || 0);
+  });
+  const sorted = Object.entries(catGastos).sort((a,b) => b[1]-a[1]).slice(0,5);
+  const maxCat = sorted[0]?.[1] || 1;
+  document.getElementById('cat-bars').innerHTML = sorted.map(([nome, val]) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:var(--txt2)">${nome}</span>
+        <span style="font-weight:600">${BRL(val)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${(val/maxCat*100).toFixed(0)}%;background:var(--vermelho)"></div></div>
+    </div>`).join('') || '<p style="color:var(--txt3);font-size:13px">Sem despesas no mês</p>';
+}
+
+// ────────────────────────────────────────────────────────────
+// GRÁFICOS
+// ────────────────────────────────────────────────────────────
+function renderGraficos() {
+  // Últimos 6 meses
+  const meses = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    meses.push({ label: MESES_PT[d.getMonth()].slice(0,3), str: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` });
+  }
+
+  const maxVal = Math.max(...meses.map(m => {
+    const ts = cacheTransacoes.filter(t => t.data?.startsWith(m.str));
+    return Math.max(ts.filter(t => t.tipo==='receita').reduce((s,t)=>s+(t.valor||0),0),
+                    ts.filter(t => t.tipo==='despesa').reduce((s,t)=>s+(t.valor||0),0));
+  }), 1);
+
+  // Gráfico evolução (resumo)
+  document.getElementById('chart-evolucao').innerHTML = meses.map(m => {
+    const ts  = cacheTransacoes.filter(t => t.data?.startsWith(m.str));
+    const rec = ts.filter(t => t.tipo==='receita').reduce((s,t)=>s+(t.valor||0),0);
+    const dep = ts.filter(t => t.tipo==='despesa').reduce((s,t)=>s+(t.valor||0),0);
+    const hr  = Math.round((rec/maxVal)*100);
+    const hd  = Math.round((dep/maxVal)*100);
+    return `<div class="chart-bar-wrap">
+      <div style="display:flex;gap:2px;align-items:flex-end;height:100%">
+        <div class="chart-bar" style="height:${hr}%;background:var(--verde);width:10px"></div>
+        <div class="chart-bar" style="height:${hd}%;background:var(--vermelho);width:10px"></div>
+      </div>
+      <div class="chart-label">${m.label}</div>
+    </div>`;
+  }).join('');
+
+  // Gráfico receitas vs despesas (gráficos view)
+  document.getElementById('chart-rec-desp').innerHTML = document.getElementById('chart-evolucao').innerHTML;
+
+  // Gráfico categorias
+  const catGastos = {};
+  cacheTransacoes.filter(t => t.tipo==='despesa').forEach(t => {
+    const cat = cacheCategorias.find(c => c.id === t.categoriaId);
+    const nome = cat?.nome || 'Outros';
+    catGastos[nome] = { val: (catGastos[nome]?.val||0) + (t.valor||0), cor: cat?.cor || '#94A3B8' };
+  });
+  const entries = Object.entries(catGastos).sort((a,b) => b[1].val - a[1].val).slice(0,6);
+  const total = entries.reduce((s,[,v]) => s + v.val, 0);
+  document.getElementById('grafico-cat-desp').innerHTML = entries.map(([nome, {val, cor}]) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${cor};display:inline-block"></span>${nome}</span>
+        <span style="font-weight:600">${total > 0 ? Math.round(val/total*100) : 0}% — ${BRL(val)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${total > 0 ? (val/total*100).toFixed(0) : 0}%;background:${cor}"></div></div>
+    </div>`).join('') || '<p style="color:var(--txt3)">Sem dados</p>';
+}
+
+// ────────────────────────────────────────────────────────────
+// CALENDÁRIO
+// ────────────────────────────────────────────────────────────
+window.calMes = (dir) => { calData.setMonth(calData.getMonth() + dir); renderCalendario(); };
+
+function renderCalendario() {
+  document.getElementById('cal-titulo').textContent = `${MESES_PT[calData.getMonth()]} ${calData.getFullYear()}`;
+  const ano = calData.getFullYear(), mes = calData.getMonth();
+  const mesStr = `${ano}-${String(mes+1).padStart(2,'0')}`;
+  const primeiro = new Date(ano, mes, 1).getDay();
+  const dias = new Date(ano, mes+1, 0).getDate();
+
+  const grid = document.getElementById('cal-grid');
+  const dias_semana = ['D','S','T','Q','Q','S','S'];
+
+  let html = dias_semana.map(d => `<div style="text-align:center;font-size:11px;font-weight:700;color:var(--txt3);padding:4px">${d}</div>`).join('');
+
+  for (let i = 0; i < primeiro; i++) html += '<div></div>';
+
+  for (let d = 1; d <= dias; d++) {
+    const dataStr = `${mesStr}-${String(d).padStart(2,'0')}`;
+    const ts = cacheTransacoes.filter(t => t.data === dataStr);
+    const temRec  = ts.some(t => t.tipo === 'receita');
+    const temDesp = ts.some(t => t.tipo === 'despesa');
+    const hoje = new Date().toISOString().split('T')[0] === dataStr;
+    html += `<div style="text-align:center;padding:6px 2px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:${hoje?'800':'500'};background:${hoje?'var(--azul-l)':''};color:${hoje?'var(--azul)':''}" onclick="abrirModalTransacao({data:'${dataStr}'})">
+      ${d}${temRec || temDesp ? `<div style="display:flex;justify-content:center;gap:2px;margin-top:2px">${temRec?'<span style="width:5px;height:5px;border-radius:50%;background:var(--verde);display:inline-block"></span>':''}${temDesp?'<span style="width:5px;height:5px;border-radius:50%;background:var(--vermelho);display:inline-block"></span>':''}</div>` : '<div style="height:9px"></div>'}
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// ────────────────────────────────────────────────────────────
+// SIMULADOR IRPF
+// ────────────────────────────────────────────────────────────
+const TABELA_IRPF = [
+  { ate: 2259.20, al: 0,     ded: 0       },
+  { ate: 2826.65, al: 0.075, ded: 169.44  },
+  { ate: 3751.05, al: 0.15,  ded: 381.44  },
+  { ate: 4664.68, al: 0.225, ded: 662.77  },
+  { ate: Infinity,al: 0.275, ded: 896.00  },
+];
+const DEP_DEDUCAO = 189.59;
+
+window.calcularIR = () => {
+  const rend = parseFloat(document.getElementById('sim-rendimentos').value) || 0;
+  const prev = parseFloat(document.getElementById('sim-prev').value) || 0;
+  const sau  = parseFloat(document.getElementById('sim-saude').value) || 0;
+  const educ = parseFloat(document.getElementById('sim-educ').value) || 0;
+  const dep  = parseInt(document.getElementById('sim-dep').value) || 0;
+  const irrf = parseFloat(document.getElementById('sim-irrf').value) || 0;
+
+  const deducoes = prev + sau + educ + (dep * DEP_DEDUCAO);
+  const base = Math.max(0, rend - deducoes);
+
+  let imposto = 0;
+  for (const f of TABELA_IRPF) {
+    if (base <= f.ate) { imposto = Math.max(0, base * f.al - f.ded); break; }
+  }
+  const resultado = imposto - irrf;
+  const corRes = resultado < 0 ? 'var(--verde)' : resultado > 0 ? 'var(--vermelho)' : 'var(--txt1)';
+
+  document.getElementById('sim-base').textContent = BRL(base);
+  document.getElementById('sim-imposto').textContent = BRL(imposto);
+  const elRes = document.getElementById('sim-resultado');
+  elRes.textContent = (resultado < 0 ? '↩ Restituir: ' : '↳ A pagar: ') + BRL(Math.abs(resultado));
+  elRes.style.color = corRes;
+};
+
+// ── Inicializar filtro de mês da tela de transações ──────
+document.getElementById('filtro-mes').value = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+
+</script>
+</body>
+</html>
