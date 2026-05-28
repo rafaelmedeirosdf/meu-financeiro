@@ -1355,250 +1355,171 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="view-header">
         <div>
           <div class="view-title">Leitor de Contracheque</div>
-          <div class="view-subtitle">Auditoria matemática de INSS e IRRF com prova real</div>
+          <div class="view-subtitle">Preencha os valores do seu contracheque — auditoria em tempo real</div>
         </div>
       </div>
 
-      <!-- Layout em 2 colunas — tudo inline, sem depender de .grid -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;width:100%">
+      <!-- Barra de ações -->
+      <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
+        <input type="file" id="file-input" accept=".pdf,image/*" style="display:none" onchange="handleFileUpload(this)">
+        <button onclick="document.getElementById('file-input').click()"
+                style="padding:9px 18px;border-radius:8px;border:1.5px solid #3B82F6;background:#EFF6FF;
+                       font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#2563EB">
+          📎 Anexar PDF (opcional)
+        </button>
+        <span id="file-badge" style="display:none;padding:8px 14px;border-radius:8px;
+              background:#DCFCE7;color:#16A34A;font-size:13px;font-weight:600"></span>
+        <button onclick="limparExtrator()"
+                style="padding:9px 18px;border-radius:8px;border:1.5px solid #E2E8F0;background:#fff;
+                       font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#475569">
+          🗑️ Limpar
+        </button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <label style="font-size:12px;font-weight:700;color:#475569">Competência:</label>
+          <input type="month" id="ext-comp"
+                 style="padding:8px 12px;border:1.5px solid #D1D5DB;border-radius:8px;
+                        font-size:13px;font-family:inherit;background:#fff;outline:none">
+        </div>
+      </div>
+
+      <!-- 2 colunas -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+
+        <!-- Coluna esquerda: campos -->
         <div>
 
-          <!-- CARD UPLOAD -->
-          <div style="background:#fff;border-radius:14px;padding:20px;
-                      box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:16px">
-            <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#0F172A">
-              📤 Enviar Contracheque
-            </h3>
-
-            <input type="file" id="file-input" accept=".pdf,image/*"
-                   style="display:none" onchange="handleFileUpload(this)">
-
-            <!-- ZONA DE UPLOAD -->
-            <div id="upload-zone"
-                 onclick="document.getElementById('file-input').click()"
-                 style="border:2.5px dashed #3B82F6;border-radius:14px;
-                        padding:40px 20px;text-align:center;cursor:pointer;
-                        background:#EFF6FF;min-height:220px;
-                        display:flex;flex-direction:column;
-                        align-items:center;justify-content:center;
-                        transition:border-color .2s,background .2s,transform .2s;
-                        user-select:none">
-              <div style="font-size:56px;line-height:1;margin-bottom:14px;
-                          transition:transform .2s" id="upload-icon">☁️</div>
-              <div id="upload-txt"
-                   style="font-size:15px;font-weight:700;color:#2563EB;margin-bottom:8px">
-                Arraste o arquivo aqui ou clique para selecionar
-              </div>
-              <div style="font-size:13px;color:#64748B;margin-bottom:16px">
-                PDF ou Imagem (JPG, PNG) — máx 10MB
-              </div>
-              <div style="display:flex;gap:8px;justify-content:center">
-                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;
-                             padding:4px 14px;font-size:12px;font-weight:700;color:#2563EB">PDF</span>
-                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;
-                             padding:4px 14px;font-size:12px;font-weight:700;color:#2563EB">JPG</span>
-                <span style="background:#fff;border:1.5px solid #93C5FD;border-radius:6px;
-                             padding:4px 14px;font-size:12px;font-weight:700;color:#2563EB">PNG</span>
-              </div>
+          <!-- PROVENTOS -->
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:#16A34A;text-transform:uppercase;letter-spacing:.7px;
+                        margin-bottom:14px;padding:4px 10px;background:#DCFCE7;border-radius:6px;display:inline-block">
+              💰 Proventos
             </div>
-
-            <!-- SPINNER -->
-            <div id="estado-processando"
-                 style="display:none;background:#EFF6FF;border-radius:14px;
-                        padding:32px;text-align:center;margin-top:12px">
-              <div style="width:36px;height:36px;border:3px solid #BFDBFE;
-                          border-top-color:#2563EB;border-radius:50%;
-                          animation:spin .7s linear infinite;margin:0 auto 14px"></div>
-              <div style="font-size:15px;font-weight:700;color:#2563EB;margin-bottom:4px">
-                Lendo arquivo...
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Salário Bruto (R$) *</label>
+                <input type="number" id="ext-bruto" placeholder="0.00" step="0.01" oninput="calcContracheque()"
+                       style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box">
               </div>
-              <div style="font-size:12px;color:#64748B">
-                Preencha os valores do contracheque abaixo
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Aux. Alimentação/VR (R$)</label>
+                <input type="number" id="ext-vr" placeholder="0.00" step="0.01" oninput="calcContracheque()"
+                       style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box">
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Horas Extras (R$)</label>
+                <input type="number" id="ext-horas-extras" placeholder="0.00" step="0.01" oninput="calcContracheque()"
+                       style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box">
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Outros Proventos (R$)</label>
+                <input type="number" id="ext-outros-prov" placeholder="0.00" step="0.01" oninput="calcContracheque()"
+                       style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box">
               </div>
             </div>
           </div>
 
-          <!-- FORMULÁRIO DE DADOS — oculto até arquivo ser carregado -->
-          <div id="ext-form" style="display:none;background:#fff;border-radius:14px;
-                                    padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-            <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;color:#0F172A">
-              💼 Dados do Contracheque
-            </h3>
-            <p style="font-size:12px;color:#64748B;margin-bottom:16px">
-              Preencha apenas os campos que aparecem no seu contracheque
-            </p>
-
-            <!-- PROVENTOS -->
-            <div style="background:#DCFCE7;border-radius:10px;padding:14px;
-                        margin-bottom:12px;border-left:3px solid #16A34A">
-              <div style="font-size:11px;font-weight:700;color:#16A34A;
-                          text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">
-                💰 Proventos
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div>
-                  <label style="display:block;font-size:11px;font-weight:700;
-                                color:#475569;margin-bottom:5px;text-transform:uppercase">
-                    Salário Bruto (R$) *
-                  </label>
-                  <input type="number" id="ext-bruto" placeholder="0.00" step="0.01"
-                         oninput="calcContracheque()"
-                         style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;
-                                border-radius:8px;font-size:14px;font-family:inherit;
-                                background:#fff;outline:none">
-                </div>
-                <div>
-                  <label style="display:block;font-size:11px;font-weight:700;
-                                color:#475569;margin-bottom:5px;text-transform:uppercase">
-                    Horas Extras (R$)
-                  </label>
-                  <input type="number" id="ext-horas-extras" placeholder="0.00" step="0.01"
-                         oninput="calcContracheque()"
-                         style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;
-                                border-radius:8px;font-size:14px;font-family:inherit;
-                                background:#fff;outline:none">
-                </div>
-                <div>
-                  <label style="display:block;font-size:11px;font-weight:700;
-                                color:#475569;margin-bottom:5px;text-transform:uppercase">
-                    Adicional Noturno (R$)
-                  </label>
-                  <input type="number" id="ext-adicional-not" placeholder="0.00" step="0.01"
-                         oninput="calcContracheque()"
-                         style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;
-                                border-radius:8px;font-size:14px;font-family:inherit;
-                                background:#fff;outline:none">
-                </div>
-                <div>
-                  <label style="display:block;font-size:11px;font-weight:700;
-                                color:#475569;margin-bottom:5px;text-transform:uppercase">
-                    Outros Proventos (R$)
-                  </label>
-                  <input type="number" id="ext-outros-prov" placeholder="0.00" step="0.01"
-                         oninput="calcContracheque()"
-                         style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;
-                                border-radius:8px;font-size:14px;font-family:inherit;
-                                background:#fff;outline:none">
-                </div>
-              </div>
+          <!-- DESCONTOS OBRIGATÓRIOS -->
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:#DC2626;text-transform:uppercase;letter-spacing:.7px;
+                        margin-bottom:14px;padding:4px 10px;background:#FEE2E2;border-radius:6px;display:inline-block">
+              🏛️ Descontos Obrigatórios
             </div>
-
-            <!-- DESCONTOS OBRIGATÓRIOS -->
-            <div style="background:#FEE2E2;border-radius:10px;padding:14px;
-                        margin-bottom:12px;border-left:3px solid #DC2626">
-              <div style="font-size:11px;font-weight:700;color:#DC2626;
-                          text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">
-                🏛️ Descontos Obrigatórios
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div>
-                  <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">INSS (R$)</label>
-                  <input type="number" id="ext-inss" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none">
-                </div>
-                <div>
-                  <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">IRRF (R$)</label>
-                  <input type="number" id="ext-irrf" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none">
-                </div>
-              </div>
-            </div>
-
-            <!-- BENEFÍCIOS -->
-            <div style="background:#DBEAFE;border-radius:10px;padding:14px;
-                        margin-bottom:12px;border-left:3px solid #2563EB">
-              <div style="font-size:11px;font-weight:700;color:#2563EB;
-                          text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">
-                🎁 Benefícios Descontados
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Vale Transporte (R$)</label><input type="number" id="ext-vt" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Vale Refeição/Alim. (R$)</label><input type="number" id="ext-vr" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Plano de Saúde (R$)</label><input type="number" id="ext-saude" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Plano Odontológico (R$)</label><input type="number" id="ext-dental" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Seguro de Vida (R$)</label><input type="number" id="ext-seguro" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Farmácia (R$)</label><input type="number" id="ext-farmacia" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-              </div>
-            </div>
-
-            <!-- PREVIDÊNCIA -->
-            <div style="background:#EDE9FE;border-radius:10px;padding:14px;
-                        margin-bottom:12px;border-left:3px solid #7C3AED">
-              <div style="font-size:11px;font-weight:700;color:#7C3AED;
-                          text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">
-                📈 Previdência
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Prev. Complementar (R$)</label><input type="number" id="ext-prev-comp" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Pensão Alimentícia (R$)</label><input type="number" id="ext-pensao" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-              </div>
-            </div>
-
-            <!-- EMPRÉSTIMOS -->
-            <div style="background:#FFEDD5;border-radius:10px;padding:14px;
-                        margin-bottom:12px;border-left:3px solid #EA580C">
-              <div style="font-size:11px;font-weight:700;color:#EA580C;
-                          text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">
-                🏦 Empréstimos Consignados
-              </div>
-              <div id="ext-emprestimos-campos">
-                <div class="ext-emp-linha" style="display:grid;grid-template-columns:1fr 120px;gap:10px;margin-bottom:10px">
-                  <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Descrição</label><input type="text" class="ext-emp-desc" placeholder="Ex: Consignado BRB" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                  <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Valor (R$)</label><input type="number" class="ext-emp-val" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                </div>
-                <div class="ext-emp-linha" style="display:grid;grid-template-columns:1fr 120px;gap:10px">
-                  <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Descrição</label><input type="text" class="ext-emp-desc" placeholder="Ex: Financiamento" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                  <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Valor (R$)</label><input type="number" class="ext-emp-val" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                </div>
-              </div>
-              <button onclick="adicionarEmprestimo()"
-                      style="margin-top:10px;background:none;border:1.5px dashed #EA580C;
-                             border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;
-                             color:#EA580C;cursor:pointer;font-family:inherit">
-                + Adicionar outro empréstimo
-              </button>
-            </div>
-
-            <!-- OUTROS -->
-            <div style="background:#F1F5F9;border-radius:10px;padding:14px;
-                        margin-bottom:14px;border-left:3px solid #94A3B8">
-              <div style="font-size:11px;font-weight:700;color:#64748B;
-                          text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">
-                📋 Outros Descontos
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Sindicato/Associação (R$)</label><input type="number" id="ext-sindicato" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Outros (R$)</label><input type="number" id="ext-outros-desc" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></div>
-              </div>
-            </div>
-
-            <!-- COMPETÊNCIA E CONTA -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               <div>
-                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Competência</label>
-                <input type="month" id="ext-comp" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none">
+                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">INSS (R$)</label>
+                <input type="number" id="ext-inss" placeholder="0.00" step="0.01" oninput="calcContracheque()"
+                       style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box">
               </div>
               <div>
-                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Lançar na Conta</label>
-                <select id="ext-conta-sel" style="width:100%;padding:9px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></select>
+                <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">IRRF (R$)</label>
+                <input type="number" id="ext-irrf" placeholder="0.00" step="0.01" oninput="calcContracheque()"
+                       style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box">
               </div>
             </div>
+          </div>
+
+          <!-- BENEFÍCIOS -->
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:.7px;
+                        margin-bottom:14px;padding:4px 10px;background:#DBEAFE;border-radius:6px;display:inline-block">
+              🎁 Benefícios e Saúde
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Vale Transporte (R$)</label><input type="number" id="ext-vt" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Plano de Saúde (R$)</label><input type="number" id="ext-saude" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Plano Odontológico (R$)</label><input type="number" id="ext-dental" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Coparticipação (R$)</label><input type="number" id="ext-farmacia" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Seguro de Vida (R$)</label><input type="number" id="ext-seguro" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+            </div>
+          </div>
+
+          <!-- PREVIDÊNCIA -->
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.7px;
+                        margin-bottom:14px;padding:4px 10px;background:#EDE9FE;border-radius:6px;display:inline-block">
+              📈 Previdência
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Prev. Complementar (R$)</label><input type="number" id="ext-prev-comp" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Pensão Alimentícia (R$)</label><input type="number" id="ext-pensao" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+            </div>
+          </div>
+
+          <!-- EMPRÉSTIMOS -->
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:#EA580C;text-transform:uppercase;letter-spacing:.7px;
+                        margin-bottom:14px;padding:4px 10px;background:#FFEDD5;border-radius:6px;display:inline-block">
+              🏦 Empréstimos Consignados
+            </div>
+            <div id="ext-emprestimos-campos">
+              <div class="ext-emp-linha" style="display:grid;grid-template-columns:1fr 140px;gap:10px;margin-bottom:10px">
+                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Descrição</label><input type="text" class="ext-emp-desc" placeholder="Ex: Consignado BRB" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Valor (R$)</label><input type="number" class="ext-emp-val" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              </div>
+              <div class="ext-emp-linha" style="display:grid;grid-template-columns:1fr 140px;gap:10px;margin-bottom:10px">
+                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Descrição</label><input type="text" class="ext-emp-desc" placeholder="Ex: Financiamento Carro" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+                <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Valor (R$)</label><input type="number" class="ext-emp-val" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              </div>
+            </div>
+            <button onclick="adicionarEmprestimo()" style="width:100%;padding:9px;border:1.5px dashed #EA580C;border-radius:8px;background:#FFEDD5;font-size:12px;font-weight:700;color:#EA580C;cursor:pointer;font-family:inherit">+ Adicionar empréstimo</button>
+          </div>
+
+          <!-- OUTROS + SINDICATO -->
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.7px;
+                        margin-bottom:14px;padding:4px 10px;background:#F1F5F9;border-radius:6px;display:inline-block">
+              📋 Outros Descontos
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Sindicato/Associação (R$)</label><input type="number" id="ext-sindicato" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+              <div><label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:5px;text-transform:uppercase">Outros Descontos (R$)</label><input type="number" id="ext-outros-desc" placeholder="0.00" step="0.01" oninput="calcContracheque()" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;box-sizing:border-box"></div>
+            </div>
+          </div>
+
+          <!-- CONTA -->
+          <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,.08)">
+            <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase">Lançar na Conta</label>
+            <select id="ext-conta-sel" style="width:100%;padding:10px 12px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none"></select>
           </div>
         </div>
 
-        <!-- PAINEL DE AUDITORIA -->
+        <!-- Coluna direita: auditoria — sempre visível -->
         <div id="ext-auditoria"
-             style="display:none;background:#fff;border-radius:14px;padding:20px;
-                    box-shadow:0 2px 8px rgba(0,0,0,.08);position:sticky;top:20px">
-          <h3 style="font-size:15px;font-weight:700;margin-bottom:16px;color:#0F172A">
-            🔍 Auditoria de Cálculos
-          </h3>
+             style="background:#fff;border-radius:12px;padding:20px;
+                    box-shadow:0 1px 6px rgba(0,0,0,.08);position:sticky;top:16px">
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;color:#0F172A">🔍 Auditoria de Cálculos</h3>
+          <p style="font-size:12px;color:#64748B;margin-bottom:16px">Preencha o Salário Bruto para começar</p>
           <div id="audit-items">
-            <p style="color:#64748B;font-size:13px">Preencha os valores ao lado para ver a auditoria.</p>
+            <div style="text-align:center;padding:32px 0;color:#94A3B8">
+              <div style="font-size:40px;margin-bottom:10px">📊</div>
+              <div style="font-size:13px">Digite os valores ao lado</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ══ CONFIGURAÇÕES ══ -->
+<!-- ══ CONFIGURAÇÕES ══ -->
     <div id="view-configuracoes" class="view">
       <div class="view-header">
         <div class="view-title">Configurações</div>
